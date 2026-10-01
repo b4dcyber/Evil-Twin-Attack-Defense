@@ -25,14 +25,14 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
             <Shield className="w-4 h-4" />
           </div>
           <button
-            onClick={() => setCurrentTab('agent')}
+            onClick={() => setCurrentTab('python_web')}
             className="text-left group cursor-pointer"
           >
             <div className="text-base font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors">
-              B4DCYBER DEFENSE
+              B4DCYBER SENTINEL
             </div>
             <div className="text-[11px] text-slate-400">
-              Zero-Trust Wi-Fi Framework
+              Python Wi-Fi &amp; Router Guard (Windows &amp; Linux)
             </div>
           </button>
         </div>
@@ -48,31 +48,7 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
             }`}
           >
             <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{t.navPythonWeb}</span>
-          </button>
-
-          <button
-            onClick={() => setCurrentTab('agent')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-              currentTab === 'agent'
-                ? 'bg-slate-800 text-cyan-400'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-            }`}
-          >
-            <Radio className="w-3.5 h-3.5" />
-            <span>{t.navAgent}</span>
-          </button>
-
-          <button
-            onClick={() => setCurrentTab('firmware')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-              currentTab === 'firmware'
-                ? 'bg-slate-800 text-cyan-400'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>{t.navFirmware}</span>
+            <span>Python Web UI</span>
           </button>
 
           <button
@@ -100,18 +76,6 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
           </button>
 
           <button
-            onClick={() => setCurrentTab('windows_py')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-              currentTab === 'windows_py'
-                ? 'bg-slate-800 text-cyan-400'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-            }`}
-          >
-            <Laptop className="w-3.5 h-3.5" />
-            <span>{t.navWindowsPy}</span>
-          </button>
-
-          <button
             onClick={() => setCurrentTab('lab')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
               currentTab === 'lab'
@@ -119,20 +83,8 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
             }`}
           >
-            <Shield className="w-3.5 h-3.5" />
+            <ShieldAlert className="w-3.5 h-3.5" />
             <span>{t.navLab}</span>
-          </button>
-
-          <button
-            onClick={() => setCurrentTab('code')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-              currentTab === 'code'
-                ? 'bg-slate-800 text-cyan-400'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-            }`}
-          >
-            <Terminal className="w-3.5 h-3.5" />
-            <span>{t.navCode}</span>
           </button>
 
           <button
@@ -222,19 +174,7 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
           onClick={() => setCurrentTab('python_web')}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded font-bold ${currentTab === 'python_web' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-300'}`}
         >
-          {t.navPythonWeb}
-        </button>
-        <button
-          onClick={() => setCurrentTab('agent')}
-          className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'agent' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
-        >
-          {t.navAgent}
-        </button>
-        <button
-          onClick={() => setCurrentTab('firmware')}
-          className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'firmware' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
-        >
-          {t.navFirmware}
+          Python Web UI
         </button>
         <button
           onClick={() => setCurrentTab('router_login')}
@@ -249,22 +189,10 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
           {t.navDualSsid}
         </button>
         <button
-          onClick={() => setCurrentTab('windows_py')}
-          className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'windows_py' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
-        >
-          {t.navWindowsPy}
-        </button>
-        <button
           onClick={() => setCurrentTab('lab')}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'lab' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
         >
           {t.navLab}
-        </button>
-        <button
-          onClick={() => setCurrentTab('code')}
-          className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'code' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
-        >
-          {t.navCode}
         </button>
         <button
           onClick={() => setCurrentTab('logs')}

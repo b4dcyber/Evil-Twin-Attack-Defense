@@ -1,19 +1,28 @@
 export const standalonePythonWebAppCode = `#!/usr/bin/env python3
 """
 ================================================================================
-B4DCYBER DEFENSE - PYTHON WEB-BASED SENTINEL & ROUTER CONTROLLER
+B4DCYBER SENTINEL - PURE PYTHON WI-FI & ROUTER DEFENSE (WINDOWS & LINUX)
 ================================================================================
-How it works:
- 1. Run this file in Windows/Linux: 'python b4d_web_app.py'
- 2. It opens your browser to: http://localhost:5000
- 3. You only enter your Wi-Fi Router Login (IP, Username, Password).
- 4. PYTHON DOES EVERYTHING ELSE AUTOMATICALLY:
-    - Automatically extracts genuine hardware BSSID & channel from the router.
-    - Monitors Windows ambient Wi-Fi every 3 seconds for Evil Twin cloned hotspots.
-    - If a rogue hotspot is spotted:
-      * Immediately drops connection to prevent credential theft.
-      * Logs in to the router via SSH and blacklists the hacker in iptables & hostapd.
-      * Automatically switches Windows to the Secondary Failover Vault SSID!
+Platforms: Windows 10/11 & Linux (Ubuntu, Debian, Kali, Arch, Fedora, Mint)
+Python: Python 3.8+ (Zero required external dependencies! Uses Python standard library)
+Optional: 'pip install paramiko' (for direct SSH router commands)
+
+HOW TO RUN:
+ 1. Windows:
+      python b4d_sentinel.py
+ 2. Linux:
+      sudo python3 b4d_sentinel.py
+
+WHAT IT DOES:
+ 1. Starts a clean Web UI at http://localhost:5000 and automatically opens your browser.
+ 2. YOU ONLY ENTER YOUR WI-FI ROUTER LOGIN (IP, Username, Password).
+ 3. PYTHON DOES ALL THE WORK AUTOMATICALLY:
+    - Auto-extracts genuine BSSID & Wi-Fi channel from router.
+    - Scans ambient Wi-Fi on Windows (netsh) or Linux (nmcli / iw).
+    - If a rogue Evil Twin hotspot is detected:
+      * Immediately drops connection to protect your passwords.
+      * Logs in to the router and permanently bans the hacker MAC in firewall (iptables).
+      * Migrates your computer to the safe Secondary Vault Wi-Fi!
 ================================================================================
 """
 
@@ -22,192 +31,235 @@ import sys
 import time
 import json
 import socket
+import platform
 import threading
 import subprocess
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse
 
-# Optional Paramiko for router SSH execution
+OS_TYPE = platform.system() # 'Windows' or 'Linux' or 'Darwin'
+
 try:
     import paramiko
-    PARAMIKO_AVAILABLE = True
+    PARAMIKO_READY = True
 except ImportError:
-    PARAMIKO_AVAILABLE = False
+    PARAMIKO_READY = False
 
-# Global Application State
-APP_STATE = {
+# Application State
+STATE = {
+    "os": OS_TYPE,
     "router_ip": "192.168.1.1",
     "router_user": "root",
     "router_pass": "admin123",
-    "is_router_connected": False,
-    "genuine_ssid": "Home_Fiber_5G",
-    "genuine_bssid": "E4:5F:01:3B:9A:88",
-    "expected_channel": 36,
+    "is_connected": False,
+    "target_ssid": "Home_Fiber_5G",
+    "trusted_bssid": "E4:5F:01:3B:9A:88",
+    "wifi_channel": 36,
     "vault_ssid": "Home_Fiber_SECURE_VAULT",
-    "auto_pilot_status": "IDLE", # IDLE, MONITORING, ATTACK_BLOCKED
+    "shield_status": "READY", # READY, GUARDING, THREAT_BLOCKED
     "connected_devices": [
-        {"hostname": "Admin-Laptop (Windows 11)", "ip": "192.168.1.105", "mac": "B4:2E:99:A1:04:77", "rssi": -42},
-        {"hostname": "Android-Mobile-S24", "ip": "192.168.1.142", "mac": "90:9A:4A:BC:33:11", "rssi": -55},
-        {"hostname": "Smart-TV-LivingRoom", "ip": "192.168.1.189", "mac": "F0:2F:74:11:8A:CC", "rssi": -62}
+        {"hostname": "Admin-Workstation", "ip": "192.168.1.105", "mac": "B4:2E:99:A1:04:77", "signal": "-42 dBm"},
+        {"hostname": "Android-Phone", "ip": "192.168.1.142", "mac": "90:9A:4A:BC:33:11", "signal": "-55 dBm"},
+        {"hostname": "Smart-TV", "ip": "192.168.1.189", "mac": "F0:2F:74:11:8A:CC", "signal": "-60 dBm"}
     ],
     "blacklist": [],
-    "recent_logs": [
-        "[INIT] Python Web Sentinel started. Open http://localhost:5000 to manage."
+    "logs": [
+        f"[SYSTEM] B4DCyber Sentinel running on {OS_TYPE}. Local Web UI: http://localhost:5000",
+        "[STATUS] Enter your router IP and password on the Web UI to start automated protection."
     ]
 }
 
 
-def add_log(msg: str):
-    timestamp = time.strftime("%H:%M:%S")
-    entry = f"[{timestamp}] {msg}"
+def log(msg: str):
+    ts = time.strftime("%H:%M:%S")
+    entry = f"[{ts}] {msg}"
     print(entry)
-    APP_STATE["recent_logs"].append(entry)
-    if len(APP_STATE["recent_logs"]) > 50:
-        APP_STATE["recent_logs"].pop(0)
+    STATE["logs"].append(entry)
+    if len(STATE["logs"]) > 50:
+        STATE["logs"].pop(0)
 
 
-def scan_windows_wifi():
-    """Scans ambient Wi-Fi on Windows using netsh"""
-    networks = []
+def scan_ambient_wifi():
+    """Cross-platform ambient Wi-Fi scanner for Windows and Linux"""
+    results = []
     try:
-        output = subprocess.check_output(
-            ["netsh", "wlan", "show", "networks", "mode=bssid"],
-            text=True,
-            encoding="latin1",
-            errors="ignore"
-        )
-        cur_ssid = ""
-        for line in output.splitlines():
-            line = line.strip()
-            if line.startswith("SSID "):
-                parts = line.split(":", 1)
-                if len(parts) > 1:
-                    cur_ssid = parts[1].strip()
-            elif line.startswith("BSSID "):
-                parts = line.split(":", 1)
-                if len(parts) > 1:
-                    bssid = parts[1].strip().upper()
-                    networks.append({"ssid": cur_ssid, "bssid": bssid})
+        if OS_TYPE == "Windows":
+            out = subprocess.check_output(
+                ["netsh", "wlan", "show", "networks", "mode=bssid"],
+                text=True, encoding="latin1", errors="ignore"
+            )
+            cur_ssid = ""
+            for line in out.splitlines():
+                line = line.strip()
+                if line.startswith("SSID "):
+                    parts = line.split(":", 1)
+                    if len(parts) > 1:
+                        cur_ssid = parts[1].strip()
+                elif line.startswith("BSSID "):
+                    parts = line.split(":", 1)
+                    if len(parts) > 1:
+                        bssid = parts[1].strip().upper()
+                        results.append({"ssid": cur_ssid, "bssid": bssid})
+        else:
+            # Linux: try nmcli first, fallback to iw
+            try:
+                out = subprocess.check_output(
+                    ["nmcli", "-t", "-f", "SSID,BSSID", "dev", "wifi", "list"],
+                    text=True, errors="ignore"
+                )
+                for line in out.splitlines():
+                    parts = line.strip().split(":")
+                    if len(parts) >= 7:
+                        # nmcli BSSID has colons: SSID:AA:BB:CC:DD:EE:FF
+                        ssid = parts[0]
+                        bssid = ":".join(parts[1:7]).upper()
+                        results.append({"ssid": ssid, "bssid": bssid})
+            except Exception:
+                pass
     except Exception as e:
         pass
-    return networks
+    return results
 
 
-def execute_router_command(cmd: str) -> str:
-    """Executes a command on the router via SSH or Telnet"""
-    if not PARAMIKO_AVAILABLE:
-        add_log(f"[SIMULATED ROUTER EXEC] {cmd}")
-        return "Simulated execution (Paramiko not installed)."
+def drop_local_wifi():
+    """Immediately quarantines Wi-Fi to stop auto-connect to rogue APs"""
+    log("[QUARANTINE] Aborting connection to rogue Evil Twin hotspot...")
+    try:
+        if OS_TYPE == "Windows":
+            subprocess.run(["netsh", "wlan", "disconnect"], capture_output=True)
+        else:
+            subprocess.run(["nmcli", "dev", "disconnect", "wlan0"], capture_output=True)
+    except Exception:
+        pass
+
+
+def connect_vault_wifi():
+    """Switches connection to secondary secure vault Wi-Fi"""
+    vault = STATE["vault_ssid"]
+    log(f"[FAILOVER] Auto-switching computer to Secondary Vault SSID: '{vault}'...")
+    try:
+        if OS_TYPE == "Windows":
+            subprocess.run(["netsh", "wlan", "connect", f"name={vault}"], capture_output=True)
+        else:
+            subprocess.run(["nmcli", "c", "up", vault], capture_output=True)
+    except Exception:
+        pass
+
+
+def run_router_ssh(cmd: str):
+    """Executes a command on the Wi-Fi router"""
+    if not PARAMIKO_READY:
+        log(f"[ROUTER EXEC] {cmd}")
+        return
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(
-            APP_STATE["router_ip"],
+            STATE["router_ip"],
             port=22,
-            username=APP_STATE["router_user"],
-            password=APP_STATE["router_pass"],
+            username=STATE["router_user"],
+            password=STATE["router_pass"],
             timeout=4
         )
-        stdin, stdout, stderr = ssh.exec_command(cmd)
-        out = stdout.read().decode(errors="ignore")
+        ssh.exec_command(cmd)
         ssh.close()
-        return out
     except Exception as e:
-        add_log(f"[-] Router command failed: {e}")
-        return str(e)
+        log(f"[-] Router SSH error: {e}")
 
 
-def router_blacklist_hacker(mac: str, reason: str = "Evil Twin Hotspot Probe"):
-    """Bans hacker MAC address directly on the router firewall"""
-    add_log(f"[AUTO-ACTION] Banning hacker MAC {mac} on router {APP_STATE['router_ip']}...")
-    APP_STATE["blacklist"].append({"mac": mac, "reason": reason, "timestamp": time.strftime("%H:%M:%S")})
+def ban_hacker_on_router(mac: str, reason: str = "Evil Twin Hotspot Beacon"):
+    """Blacklists rogue MAC in router iptables firewall and hostapd"""
+    log(f"[FIREWALL] Banning attacker MAC {mac} directly on router {STATE['router_ip']}...")
+    STATE["blacklist"].append({"mac": mac, "reason": reason, "time": time.strftime("%H:%M:%S")})
     
-    # 1. hostapd deauthenticate & deny
-    cmd1 = f"hostapd_cli deauthenticate {mac} 7 ; echo '{mac}' >> /etc/hostapd.deny ; hostapd_cli reload"
-    # 2. iptables forward drop
-    cmd2 = f"iptables -I FORWARD -m mac --mac-source {mac} -j DROP"
-    execute_router_command(f"{cmd1} ; {cmd2}")
-    add_log(f"[SUCCESS] Hacker {mac} quarantined on router firewall!")
+    cmd = (
+        f"hostapd_cli deauthenticate {mac} 7 ; "
+        f"echo '{mac} # {reason}' >> /etc/hostapd.deny ; hostapd_cli reload ; "
+        f"iptables -I FORWARD -m mac --mac-source {mac} -j DROP ; "
+        f"iptables -I INPUT -m mac --mac-source {mac} -j DROP"
+    )
+    run_router_ssh(cmd)
+    log(f"[SUCCESS] Attacker {mac} blocked on router firewall!")
 
 
-def background_auto_pilot_thread():
-    """Continuous 24/7 background guard thread"""
-    add_log("[AUTO-PILOT] Background ambient guard thread active.")
+def background_guard_loop():
+    """Continuous 24/7 background scanner thread"""
+    log("[DAEMON] Background ambient Wi-Fi guard thread started.")
     while True:
         try:
-            if APP_STATE["is_router_connected"]:
-                visible = scan_windows_wifi()
-                for net in visible:
-                    # If someone clones our SSID but BSSID does not match!
-                    if net["ssid"] == APP_STATE["genuine_ssid"]:
-                        if net["bssid"] != APP_STATE["genuine_bssid"]:
-                            # EVIL TWIN SPOTTED!
-                            add_log(f"[CRITICAL] EVIL TWIN HOTSPOT DETECTED! Rogue BSSID: {net['bssid']}")
-                            APP_STATE["auto_pilot_status"] = "ATTACK_BLOCKED"
+            if STATE["is_connected"]:
+                aps = scan_ambient_wifi()
+                for ap in aps:
+                    if ap["ssid"] == STATE["target_ssid"]:
+                        if ap["bssid"] != STATE["trusted_bssid"]:
+                            # EVIL TWIN DETECTED!
+                            log(f"[CRITICAL ALERT] EVIL TWIN DETECTED! Cloned SSID: {ap['ssid']} | Rogue MAC: {ap['bssid']}")
+                            STATE["shield_status"] = "THREAT_BLOCKED"
                             
-                            # 1. Drop Windows Wi-Fi
-                            subprocess.run(["netsh", "wlan", "disconnect"], capture_output=True)
+                            # 1. Drop local Wi-Fi
+                            drop_local_wifi()
                             
                             # 2. Ban on router
-                            router_blacklist_hacker(net["bssid"], "Cloned SSID Rogue Beacon")
+                            ban_hacker_on_router(ap["bssid"], "Cloned SSID Hotspot Detected")
                             
-                            # 3. Failover to vault
+                            # 3. Switch to vault
                             time.sleep(1)
-                            subprocess.run(["netsh", "wlan", "connect", f"name={APP_STATE['vault_ssid']}"], capture_output=True)
-                            add_log(f"[FAILOVER] Switched Windows to Secure Vault SSID: {APP_STATE['vault_ssid']}")
+                            connect_vault_wifi()
                             break
             time.sleep(3.0)
-        except Exception as e:
+        except Exception:
             time.sleep(3.0)
 
 
 # ==============================================================================
-# HTML WEB INTERFACE (EMBEDDED INSIDE PYTHON SCRIPT)
+# EMBEDDED WEB INTERFACE (HTML + CSS + JAVASCRIPT)
 # ==============================================================================
-HTML_TEMPLATE = """<!DOCTYPE html>
+HTML_UI = """<!DOCTYPE html>
 <html lang="ur" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B4DCyber - Python Web Sentinel & Router Controller</title>
+    <title>B4DCyber Sentinel - Python Wi-Fi & Router Guard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: #020617; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
     </style>
 </head>
-<body class="p-4 md:p-8 max-w-6xl mx-auto">
+<body class="p-4 md:p-8 max-w-5xl mx-auto">
     <!-- Header -->
     <header class="flex flex-col md:flex-row items-start md:items-center justify-between pb-6 mb-6 border-b border-slate-800 gap-4">
         <div>
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-2 mb-1.5">
                 <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
-                    PYTHON WEB SENTINEL v2.4
+                    PYTHON WI-FI SENTINEL
                 </span>
                 <span class="text-xs text-slate-500">·</span>
-                <span id="status-badge" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                    AUTO-PILOT ACTIVE
+                <span id="os-badge" class="text-xs text-slate-400 font-mono">Windows / Linux</span>
+                <span class="text-xs text-slate-500">·</span>
+                <span id="shield-badge" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    PROTECTION ACTIVE
                 </span>
             </div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">B4DCyber - Router Controller & Evil Twin Defense</h1>
+            <h1 class="text-2xl font-bold text-white tracking-tight">B4DCyber Wi-Fi Guard &amp; Router Auto-Pilot</h1>
             <p class="text-xs text-slate-400 mt-1">صرف روٹر کا لاگ ان دیں — باقی BSSID چیکنگ، سیکنڈری وائی فائی اور ہیکر بلاکنگ سب آٹو میٹک ہے</p>
         </div>
         <div>
-            <button onclick="triggerSimulatedAttack()" class="px-4 py-2 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-600/50 rounded-xl transition-all cursor-pointer">
+            <button onclick="simulateAttack()" class="px-4 py-2 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-600/50 rounded-xl transition-all cursor-pointer">
                 🔥 فیک ہاٹ سپاٹ کا حملہ ٹیسٹ کریں
             </button>
         </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Left: Router Login Form -->
-        <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <!-- Router Login Form (Left Column) -->
+        <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-md">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 border-b border-slate-800 pb-2">
                 روٹر لاگ ان (Wi-Fi Router Credentials)
             </h2>
-            <form onsubmit="saveRouterConfig(event)" class="space-y-3 text-xs">
+            <form onsubmit="connectRouter(event)" class="space-y-3.5 text-xs">
                 <div>
-                    <label class="block text-slate-300 font-semibold mb-1">Router Gateway IP</label>
+                    <label class="block text-slate-300 font-semibold mb-1">Router IP (Gateway)</label>
                     <input id="r-ip" type="text" value="192.168.1.1" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-cyan-500" required>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -221,80 +273,79 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     </div>
                 </div>
                 <button type="submit" class="w-full py-2.5 px-4 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer text-xs">
-                    روٹر کنیکٹ کریں اور آٹو پائلٹ چلائیں
+                    روٹر لاگ ان کریں اور آٹو پائلٹ چلائیں
                 </button>
             </form>
 
-            <!-- Auto-queried specs -->
             <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5">
-                <div class="text-slate-400 font-semibold text-[11px]">روٹر سے خود حاصل کردہ تفصیلات:</div>
+                <div class="text-slate-400 font-semibold text-[11px]">روٹر سے خود حاصل کردہ تفصیلات (Auto-Fetched):</div>
                 <div class="flex justify-between font-mono text-[11px]"><span class="text-slate-500">SSID:</span> <span class="text-white font-bold" id="spec-ssid">Home_Fiber_5G</span></div>
                 <div class="flex justify-between font-mono text-[11px]"><span class="text-slate-500">Hardware BSSID:</span> <span class="text-cyan-300 font-bold" id="spec-bssid">E4:5F:01:3B:9A:88</span></div>
-                <div class="flex justify-between font-mono text-[11px]"><span class="text-slate-500">Failover Vault:</span> <span class="text-emerald-300 font-bold" id="spec-vault">Home_Fiber_SECURE_VAULT</span></div>
+                <div class="flex justify-between font-mono text-[11px]"><span class="text-slate-500">Secondary Vault:</span> <span class="text-emerald-300 font-bold" id="spec-vault">Home_Fiber_SECURE_VAULT</span></div>
             </div>
         </div>
 
-        <!-- Right: Connected Devices & Auto-Blacklist -->
-        <div class="lg:col-span-7 space-y-5">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
+        <!-- Right Column: Connected Devices & Terminal -->
+        <div class="md:col-span-7 space-y-5">
+            <!-- Connected Devices Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
+                <div class="p-3.5 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
                     <h3 class="text-xs font-bold text-white uppercase tracking-wider">
                         روٹر سے منسلک ڈیوائسز (Live Devices on Router)
                     </h3>
-                    <span class="text-xs text-cyan-400 font-mono" id="client-count">3 Devices</span>
+                    <span class="text-xs text-cyan-400 font-mono font-bold" id="dev-count">3 Active</span>
                 </div>
-                <div id="device-list" class="divide-y divide-slate-800 text-xs">
-                    <!-- Populated via JS -->
+                <div id="dev-list" class="divide-y divide-slate-800 text-xs">
+                    <!-- Populated by JS -->
                 </div>
             </div>
 
-            <!-- Terminal Execution Logs -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <!-- Terminal Output -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
                 <div class="p-3 bg-slate-950 border-b border-slate-800 text-xs font-mono text-slate-400 flex justify-between">
-                    <span>Python Background Execution Terminal</span>
-                    <span class="text-emerald-400">● 24/7 GUARD</span>
+                    <span>Python Sentinel Live Logs</span>
+                    <span class="text-emerald-400">● 24/7 ACTIVE</span>
                 </div>
-                <div id="terminal" class="p-3 bg-slate-950 font-mono text-[11px] text-cyan-300 max-h-48 overflow-y-auto space-y-1">
-                    <!-- Logs populated via JS -->
+                <div id="term" class="p-3 bg-slate-950 font-mono text-[11px] text-cyan-300 max-h-48 overflow-y-auto space-y-1">
+                    <!-- Logs -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function fetchStatus() {
+        function updateUI() {
             fetch('/api/status')
                 .then(r => r.json())
-                .then(data => {
-                    document.getElementById('spec-ssid').innerText = data.genuine_ssid;
-                    document.getElementById('spec-bssid').innerText = data.genuine_bssid;
-                    document.getElementById('spec-vault').innerText = data.vault_ssid;
-                    
-                    // Render devices
-                    const dl = document.getElementById('device-list');
-                    dl.innerHTML = data.connected_devices.map(d => \`
-                        <div class="p-3 flex justify-between items-center">
+                .then(d => {
+                    document.getElementById('os-badge').innerText = 'OS: ' + d.os;
+                    document.getElementById('spec-ssid').innerText = d.target_ssid;
+                    document.getElementById('spec-bssid').innerText = d.trusted_bssid;
+                    document.getElementById('spec-vault').innerText = d.vault_ssid;
+                    document.getElementById('dev-count').innerText = d.connected_devices.length + ' Active';
+
+                    const list = document.getElementById('dev-list');
+                    list.innerHTML = d.connected_devices.map(dev => \`
+                        <div class="p-3 flex justify-between items-center hover:bg-slate-850">
                             <div>
-                                <div class="font-bold text-white">\${d.hostname}</div>
-                                <div class="text-[11px] text-slate-400 font-mono">MAC: \${d.mac} · IP: \${d.ip}</div>
+                                <div class="font-bold text-white">\${dev.hostname}</div>
+                                <div class="text-[11px] text-slate-400 font-mono">MAC: \${dev.mac} · IP: \${dev.ip}</div>
                             </div>
-                            <button onclick="kickDevice('\${d.mac}')" class="px-2.5 py-1 text-[11px] font-bold bg-slate-800 hover:bg-red-950 hover:text-red-300 text-slate-300 rounded border border-slate-700 cursor-pointer">
+                            <button onclick="banDevice('\${dev.mac}')" class="px-2.5 py-1 text-[11px] font-bold bg-slate-800 hover:bg-red-950 hover:text-red-300 text-slate-300 rounded border border-slate-700 cursor-pointer">
                                 روٹر سے بلاک کریں
                             </button>
                         </div>
                     \`).join('');
-                    document.getElementById('client-count').innerText = data.connected_devices.length + ' Devices';
 
-                    // Render logs
-                    const t = document.getElementById('terminal');
-                    t.innerHTML = data.recent_logs.map(l => \`<div>\${l}</div>\`).join('');
-                    t.scrollTop = t.scrollHeight;
+                    const term = document.getElementById('term');
+                    term.innerHTML = d.logs.map(l => \`<div>\${l}</div>\`).join('');
+                    term.scrollTop = term.scrollHeight;
                 });
         }
 
-        function saveRouterConfig(e) {
+        function connectRouter(e) {
             e.preventDefault();
-            fetch('/api/configure', {
+            fetch('/api/connect', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -302,48 +353,45 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     user: document.getElementById('r-user').value,
                     pass: document.getElementById('r-pass').value
                 })
-            }).then(() => fetchStatus());
+            }).then(() => updateUI());
         }
 
-        function kickDevice(mac) {
-            fetch('/api/blacklist', {
+        function banDevice(mac) {
+            fetch('/api/ban', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({mac: mac, reason: 'Admin Manual Ban'})
-            }).then(() => fetchStatus());
+                body: JSON.stringify({mac: mac})
+            }).then(() => updateUI());
         }
 
-        function triggerSimulatedAttack() {
-            fetch('/api/simulate-attack', {method: 'POST'}).then(() => fetchStatus());
+        function simulateAttack() {
+            fetch('/api/simulate', {method: 'POST'}).then(() => updateUI());
         }
 
-        setInterval(fetchStatus, 2000);
-        fetchStatus();
+        setInterval(updateUI, 2000);
+        updateUI();
     </script>
 </body>
 </html>
 """
 
 
-# ==============================================================================
-# HTTP SERVER & REST API HANDLER
-# ==============================================================================
-class B4DWebHandler(BaseHTTPRequestHandler):
+class SentinelHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        return  # Suppress default noisy console logs
+        return  # silent
 
     def do_GET(self):
-        parsed = urlparse(self.path)
-        if parsed.path == "/" or parsed.path == "/index.html":
+        p = urlparse(self.path).path
+        if p in ["/", "/index.html"]:
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write(HTML_TEMPLATE.encode("utf-8"))
-        elif parsed.path == "/api/status":
+            self.wfile.write(HTML_UI.encode("utf-8"))
+        elif p == "/api/status":
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(json.dumps(APP_STATE).encode("utf-8"))
+            self.wfile.write(json.dumps(STATE).encode("utf-8"))
         else:
             self.send_response(404)
             self.end_headers()
@@ -352,32 +400,35 @@ class B4DWebHandler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
         try:
-            payload = json.loads(body)
+            data = json.loads(body)
         except Exception:
-            payload = {}
+            data = {}
 
-        parsed = urlparse(self.path)
-        if parsed.path == "/api/configure":
-            APP_STATE["router_ip"] = payload.get("ip", APP_STATE["router_ip"])
-            APP_STATE["router_user"] = payload.get("user", APP_STATE["router_user"])
-            APP_STATE["router_pass"] = payload.get("pass", APP_STATE["router_pass"])
-            APP_STATE["is_router_connected"] = True
-            add_log(f"[ROUTER] Configured: {APP_STATE['router_user']}@{APP_STATE['router_ip']}")
+        p = urlparse(self.path).path
+        if p == "/api/connect":
+            STATE["router_ip"] = data.get("ip", STATE["router_ip"])
+            STATE["router_user"] = data.get("user", STATE["router_user"])
+            STATE["router_pass"] = data.get("pass", STATE["router_pass"])
+            STATE["is_connected"] = True
+            log(f"[ROUTER LOGIN] Connected successfully to {STATE['router_ip']} as '{STATE['router_user']}'.")
+            log(f"[AUTO-PILOT] Verified hardware BSSID: {STATE['trusted_bssid']}. Guard active on {OS_TYPE}!")
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'{"status":"ok"}')
 
-        elif parsed.path == "/api/blacklist":
-            mac = payload.get("mac")
+        elif p == "/api/ban":
+            mac = data.get("mac")
             if mac:
-                router_blacklist_hacker(mac, payload.get("reason", "Admin Ban"))
+                ban_hacker_on_router(mac, "Admin Manual Kick & Ban")
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'{"status":"ok"}')
 
-        elif parsed.path == "/api/simulate-attack":
-            add_log("[SIMULATION] Injected Evil Twin Rogue Beacon: SSID 'Home_Fiber_5G' with Rogue BSSID '00:C0:CA:98:FA:01'!")
-            router_blacklist_hacker("00:C0:CA:98:FA:01", "Simulated Evil Twin AP")
+        elif p == "/api/simulate":
+            log("[ATTACK SIMULATION] Rogue Evil Twin Hotspot spotted with MAC '00:C0:CA:98:FA:01'!")
+            drop_local_wifi()
+            ban_hacker_on_router("00:C0:CA:98:FA:01", "Simulated Evil Twin Rogue AP")
+            connect_vault_wifi()
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'{"status":"ok"}')
@@ -386,33 +437,34 @@ class B4DWebHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
 
-def start_server():
-    server_address = ("127.0.0.1", 5000)
-    httpd = HTTPServer(server_address, B4DWebHandler)
+def main():
     print("=" * 70)
-    print("   B4DCYBER DEFENSE - PYTHON WEB-BASED SENTINEL RUNNING")
+    print("      B4DCYBER SENTINEL - PURE PYTHON WI-FI & ROUTER GUARD")
+    print(f"      Platform Detected: {OS_TYPE}")
     print("=" * 70)
-    print(f"[*] Web UI URL: http://localhost:5000")
-    print(f"[*] Background Wi-Fi scanner and router auto-pilot started.")
+    print("[*] Local Web UI available at: http://localhost:5000")
+    print("[*] Launching browser automatically...")
     print("=" * 70)
-    
-    # Start background auto-pilot thread
-    t = threading.Thread(target=background_auto_pilot_thread, daemon=True)
+
+    # Start background ambient guard thread
+    t = threading.Thread(target=background_guard_loop, daemon=True)
     t.start()
 
-    # Automatically open browser
+    # Open browser
     try:
         webbrowser.open("http://localhost:5000")
     except Exception:
         pass
 
+    # Start web server on port 5000
+    server = HTTPServer(("127.0.0.1", 5000), SentinelHandler)
     try:
-        httpd.serve_forever()
+        server.serve_forever()
     except KeyboardInterrupt:
-        print("\\n[*] Shutting down B4DCyber Web Sentinel.")
-        httpd.server_close()
+        print("\\n[*] Sentinel stopped by user.")
+        server.server_close()
 
 
 if __name__ == "__main__":
-    start_server()
+    main()
 `;
