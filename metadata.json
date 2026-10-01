@@ -1,0 +1,7 @@
+{
+  "name": "B4DCyber - Evil Twin Defense & Wi-Fi Agent System",
+  "description": "Cryptographic Evil Twin defense framework featuring pre-connection endpoint verification (BSSID, MAC, Channel, Nonce Challenge, Geofence) and OpenWrt router firmware security daemon with hacker device detection and real-time blacklisting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
