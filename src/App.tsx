@@ -11,6 +11,8 @@ import { UserGuideModal } from './components/UserGuideModal';
 import { WindowsExeModal } from './components/WindowsExeModal';
 import { RouterLoginView } from './components/RouterLoginView';
 import { WindowsPythonView } from './components/WindowsPythonView';
+import { PythonWebSentinelView } from './components/PythonWebSentinelView';
+import { PythonAppModal } from './components/PythonAppModal';
 import { 
   initialHomeProfile, 
   initialDetectedAPs, 
@@ -32,7 +34,7 @@ import {
 import { Language } from './utils/translations';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs'>('windows_py');
+  const [currentTab, setCurrentTab] = useState<'python_web' | 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs'>('python_web');
   const [lang, setLang] = useState<Language>('ur'); // Default to Urdu/Roman Urdu per user prompt
 
   const [homeProfile, setHomeProfile] = useState(initialHomeProfile);
@@ -45,6 +47,7 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false);
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
   const [isExeModalOpen, setIsExeModalOpen] = useState(false);
+  const [isPythonModalOpen, setIsPythonModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   const [routerConfig, setRouterConfig] = useState<RouterLoginConfig>({
@@ -358,6 +361,7 @@ export default function App() {
           handleInjectEvilTwin();
           setCurrentTab('dual');
         }}
+        onOpenPythonModal={() => setIsPythonModalOpen(true)}
         onOpenApkModal={() => setIsApkModalOpen(true)}
         onOpenExeModal={() => setIsExeModalOpen(true)}
         onOpenGuideModal={() => setIsGuideModalOpen(true)}
@@ -365,6 +369,19 @@ export default function App() {
 
       {/* Main Viewport Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {currentTab === 'python_web' && (
+          <PythonWebSentinelView
+            clients={clients}
+            blacklist={blacklist}
+            onBlacklistClient={handleBlacklistClient}
+            onUnban={handleUnban}
+            lang={lang}
+            onAddLog={addLog}
+            onTriggerFailover={handleTriggerFleetFailover}
+            onDownloadScript={() => setIsPythonModalOpen(true)}
+          />
+        )}
+
         {currentTab === 'agent' && (
           <AgentView
             detectedAPs={detectedAPs}
@@ -451,6 +468,13 @@ export default function App() {
       <ApkDownloadModal
         isOpen={isApkModalOpen}
         onClose={() => setIsApkModalOpen(false)}
+        lang={lang}
+      />
+
+      {/* Standalone Python Web App Modal */}
+      <PythonAppModal
+        isOpen={isPythonModalOpen}
+        onClose={() => setIsPythonModalOpen(false)}
         lang={lang}
       />
 

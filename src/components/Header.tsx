@@ -2,17 +2,18 @@ import { Shield, Radio, ShieldAlert, Terminal, FileText, Globe, Smartphone, Down
 import { Language, translations } from '../utils/translations';
 
 interface HeaderProps {
-  currentTab: 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs';
-  setCurrentTab: (tab: 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs') => void;
+  currentTab: 'python_web' | 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs';
+  setCurrentTab: (tab: 'python_web' | 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs') => void;
   lang: Language;
   setLang: (lang: Language) => void;
   onQuickSimulate: () => void;
+  onOpenPythonModal: () => void;
   onOpenApkModal: () => void;
   onOpenExeModal: () => void;
   onOpenGuideModal: () => void;
 }
 
-export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimulate, onOpenApkModal, onOpenExeModal, onOpenGuideModal }: HeaderProps) {
+export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimulate, onOpenPythonModal, onOpenApkModal, onOpenExeModal, onOpenGuideModal }: HeaderProps) {
   const t = translations[lang];
 
   return (
@@ -38,6 +39,18 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
 
         {/* Zone 2: Clean text navigation links */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <button
+            onClick={() => setCurrentTab('python_web')}
+            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors flex items-center gap-1.5 ${
+              currentTab === 'python_web'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{t.navPythonWeb}</span>
+          </button>
+
           <button
             onClick={() => setCurrentTab('agent')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
@@ -167,10 +180,19 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
             <span>{lang === 'ur' ? 'رہنمائی (Guide)' : 'Guide'}</span>
           </button>
 
+          {/* Download Python Web App Button */}
+          <button
+            onClick={onOpenPythonModal}
+            className="px-3 py-1.5 text-xs font-bold text-slate-950 bg-cyan-400 hover:bg-cyan-300 rounded-md transition-colors whitespace-nowrap shadow-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-950" />
+            <span>Python Web App (.py)</span>
+          </button>
+
           {/* Download Windows EXE Button */}
           <button
             onClick={onOpenExeModal}
-            className="px-3 py-1.5 text-xs font-semibold text-cyan-300 bg-slate-800 hover:bg-slate-750 hover:text-white rounded-md transition-colors whitespace-nowrap border border-cyan-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="px-2.5 py-1.5 text-xs font-semibold text-cyan-300 bg-slate-900 hover:bg-slate-800 hover:text-white rounded-md transition-colors whitespace-nowrap border border-slate-800 flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <Laptop className="w-3.5 h-3.5 text-cyan-400" />
             <span>Windows .EXE</span>
@@ -196,6 +218,12 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
 
       {/* Mobile nav bar */}
       <div className="flex lg:hidden overflow-x-auto border-t border-slate-900 px-4 py-2 gap-2 bg-slate-950">
+        <button
+          onClick={() => setCurrentTab('python_web')}
+          className={`px-3 py-1 text-xs whitespace-nowrap rounded font-bold ${currentTab === 'python_web' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-300'}`}
+        >
+          {t.navPythonWeb}
+        </button>
         <button
           onClick={() => setCurrentTab('agent')}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'agent' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
