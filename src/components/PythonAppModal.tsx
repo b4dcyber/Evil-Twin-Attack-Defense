@@ -32,7 +32,7 @@ export function PythonAppModal({ isOpen, onClose, lang }: PythonAppModalProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'b4d_web_app.py';
+    a.download = 'b4d_sentinel.py';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -42,31 +42,51 @@ export function PythonAppModal({ isOpen, onClose, lang }: PythonAppModalProps) {
 
   const handleDownloadBat = () => {
     const batContent = `@echo off
-title B4DCyber - Python Web Sentinel
+title B4DCyber Sentinel - Windows Launcher
 color 0B
 echo ======================================================================
-echo    STARTING B4DCYBER PYTHON WEB SENTINEL (HTTP://LOCALHOST:5000)
+echo     STARTING B4DCYBER PYTHON SENTINEL (WINDOWS)
 echo ======================================================================
 echo.
 
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    color 0C
-    echo [-] Python is not found. Please install Python from python.org
-    echo     and check "Add Python to PATH" during setup.
-    pause
-    exit /b
+if %errorlevel% equ 0 (
+    set PY_CMD=python
+    goto FOUND_PY
 )
 
-:: Optional Paramiko for router SSH
-pip show paramiko >nul 2>&1
+py --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set PY_CMD=py
+    goto FOUND_PY
+)
+
+color 0C
+echo ======================================================================
+echo [-] ERROR: Python is not installed or not added to Windows PATH!
+echo ======================================================================
+echo.
+echo HOW TO FIX IN 1 MINUTE:
+echo  1. Download Python from https://www.python.org/downloads/
+echo  2. CRITICAL: Check the box "Add python.exe to PATH" during installation.
+echo  3. After install, double-click run.bat again!
+echo ======================================================================
+echo.
+pause
+exit /b
+
+:FOUND_PY
+echo [+] Python found: %PY_CMD%
+%PY_CMD% -c "import paramiko" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [*] Installing Paramiko for router SSH login...
-    pip install paramiko
+    echo [*] Installing Paramiko SSH library...
+    %PY_CMD% -m pip install paramiko
 )
 
 echo [*] Launching Web UI at http://localhost:5000...
-python b4d_web_app.py
+%PY_CMD% b4d_sentinel.py
+
+echo.
 pause
 `;
     const blob = new Blob([batContent], { type: 'text/plain' });

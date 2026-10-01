@@ -442,22 +442,43 @@ def main():
     print("      B4DCYBER SENTINEL - PURE PYTHON WI-FI & ROUTER GUARD")
     print(f"      Platform Detected: {OS_TYPE}")
     print("=" * 70)
-    print("[*] Local Web UI available at: http://localhost:5000")
-    print("[*] Launching browser automatically...")
-    print("=" * 70)
 
     # Start background ambient guard thread
     t = threading.Thread(target=background_guard_loop, daemon=True)
     t.start()
 
-    # Open browser
-    try:
-        webbrowser.open("http://localhost:5000")
-    except Exception:
-        pass
+    # Try common ports if 5000 is occupied
+    ports_to_try = [5000, 5001, 8080, 8888, 3001]
+    server = None
+    active_port = 5000
 
-    # Start web server on port 5000
-    server = HTTPServer(("127.0.0.1", 5000), SentinelHandler)
+    for p in ports_to_try:
+        try:
+            server = HTTPServer(("127.0.0.1", p), SentinelHandler)
+            active_port = p
+            break
+        except OSError:
+            print(f"[-] Port {p} is in use, trying next port...")
+
+    if not server:
+        # Fallback to any random open port
+        server = HTTPServer(("127.0.0.1", 0), SentinelHandler)
+        active_port = server.server_address[1]
+
+    ui_url = f"http://localhost:{active_port}"
+    print(f"[+] Local Web UI SUCCESS! Running at: {ui_url}")
+    print(f"[+] Opening browser automatically to {ui_url}...")
+    print("=" * 70)
+    print("  TIP: Keep this terminal window open while using the Web UI.")
+    print("  Press Ctrl+C to stop.")
+    print("=" * 70)
+
+    # Open browser automatically
+    try:
+        webbrowser.open(ui_url)
+    except Exception:
+        print(f"[!] Please open your browser manually and navigate to: {ui_url}")
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:

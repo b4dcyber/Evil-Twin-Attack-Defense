@@ -163,7 +163,8 @@ echo ""
 
 # Check python3
 if ! command -v python3 &> /dev/null; then
-    echo "[-] Python3 not found! Please run: sudo apt install python3"
+    echo "[-] Python3 not found! Please run: sudo apt update && sudo apt install python3 python3-pip"
+    read -p "Press Enter to exit..."
     exit 1
 fi
 
@@ -175,6 +176,7 @@ python3 -c "import paramiko" 2>/dev/null || {
 
 echo "[*] Launching Web UI at http://localhost:5000..."
 sudo python3 b4d_sentinel.py
+read -p "Press Enter to exit..."
 `;
     const blob = new Blob([shContent], { type: 'text/x-shellscript' });
     const url = URL.createObjectURL(blob);
@@ -196,22 +198,52 @@ echo     STARTING B4DCYBER PYTHON SENTINEL (WINDOWS)
 echo ======================================================================
 echo.
 
+:: 1. Check if 'python' command works
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    color 0C
-    echo [-] Python not found in PATH! Please install Python from python.org
-    pause
-    exit /b
+if %errorlevel% equ 0 (
+    set PY_CMD=python
+    goto FOUND_PYTHON
 )
 
-python -c "import paramiko" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [*] Installing Paramiko SSH library...
-    pip install paramiko
+:: 2. Check if 'py' launcher works
+py --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set PY_CMD=py
+    goto FOUND_PYTHON
 )
 
-echo [*] Launching Web UI at http://localhost:5000...
-python b4d_sentinel.py
+:: 3. Neither worked - Show Friendly Help
+color 0C
+echo ======================================================================
+echo [-] ERROR: Python is not installed or not added to Windows PATH!
+echo ======================================================================
+echo.
+echo HOW TO FIX IN 1 MINUTE:
+echo  1. Go to https://www.python.org/downloads/ and download Python.
+echo  2. CRITICAL STEP: When installing, CHECK THE BOX at the bottom:
+echo     [X] "Add python.exe to PATH"
+echo  3. Finish installation, close this window and double-click run.bat again!
+echo ======================================================================
+echo.
+pause
+exit /b
+
+:FOUND_PYTHON
+echo [+] Found Python runtime: %PY_CMD%
+echo [*] Checking optional Paramiko SSH library for router commands...
+%PY_CMD% -c "import paramiko" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [*] Installing Paramiko...
+    %PY_CMD% -m pip install paramiko
+)
+
+echo [*] Launching B4DCyber Web UI at http://localhost:5000...
+%PY_CMD% b4d_sentinel.py
+
+echo.
+echo ======================================================================
+echo [*] B4DCyber Sentinel stopped. Press any key to close this window.
+echo ======================================================================
 pause
 `;
     const blob = new Blob([batContent], { type: 'text/plain' });
@@ -607,6 +639,48 @@ pause
                 <div className="font-mono text-white bg-slate-950 p-1.5 rounded text-[11px]">
                   sudo python3 b4d_sentinel.py
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* PC Troubleshooting & Diagnostic Guide */}
+          <div className="bg-slate-900 border border-amber-800/60 rounded-xl p-4 text-xs space-y-3">
+            <div className="flex items-center gap-2 text-amber-300 font-bold">
+              <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>
+                {lang === 'ur' 
+                  ? '⚠️ اگر آپ کے PC پر نہیں چل رہا، تو یہ 3 چیزیں چیک کریں:' 
+                  : '⚠️ Why it might not run on your PC & 1-Minute Fixes:'}
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-slate-300 text-[11px]">
+              <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                <strong className="text-white block font-semibold">
+                  1. "python is not recognized" یا CMD ونڈو فوراً بند ہو جاتی ہے:
+                </strong>
+                <p className="text-slate-400 leading-relaxed">
+                  آپ کے Windows میں Python انسٹال نہیں ہے، یا انسٹال کرتے وقت "PATH" سلیکٹ نہیں کیا گیا تھا۔{' '}
+                  <span className="text-cyan-300 font-semibold">حل:</span> <code className="text-cyan-300 bg-slate-900 px-1 rounded">python.org</code> سے Python ڈاؤنلوڈ کریں اور انسٹال کرتے وقت سب سے نیچے والا چیک باکس <strong className="text-emerald-300">"Add python.exe to PATH"</strong> لازمی ٹک کریں!
+                </p>
+              </div>
+
+              <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                <strong className="text-white block font-semibold">
+                  2. فائل ڈاؤنلوڈ کر کے چلانا لازمی ہے:
+                </strong>
+                <p className="text-slate-400 leading-relaxed">
+                  ویب براؤزر (انٹرنیٹ پیج) سیکیورٹی پابندیوں کی وجہ سے آپ کے گھر کے PC کے Wi-Fi کارڈ کو ڈائریکٹ کنٹرول نہیں کر سکتا۔ اس لیے اوپر دیے گئے <strong className="text-cyan-300">"Download b4d_sentinel.py"</strong> بٹن سے فائل اپنے PC میں سیو کر کے چلائیں۔
+                </p>
+              </div>
+
+              <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                <strong className="text-white block font-semibold">
+                  3. نیا اپڈیٹ شدہ run.bat ڈاؤنلوڈ کریں:
+                </strong>
+                <p className="text-slate-400 leading-relaxed">
+                  ہم نے <strong className="text-cyan-300">run.bat</strong> فائل کو اپڈیٹ کر دیا ہے، اب اگر کوئی غلطی ہوگی تو یہ خود اسکرین پر لال رنگ میں غلطی اور اس کا حل بتائے گی اور اسکرین بند نہیں ہوگی!
+                </p>
               </div>
             </div>
           </div>
