@@ -8,6 +8,7 @@ import { CodeHub } from './components/CodeHub';
 import { AuditLogs } from './components/AuditLogs';
 import { ApkDownloadModal } from './components/ApkDownloadModal';
 import { UserGuideModal } from './components/UserGuideModal';
+import { WindowsExeModal } from './components/WindowsExeModal';
 import { RouterLoginView } from './components/RouterLoginView';
 import { WindowsPythonView } from './components/WindowsPythonView';
 import { 
@@ -43,6 +44,7 @@ export default function App() {
   const [logs, setLogs] = useState<AuditLog[]>(initialAuditLogs);
   const [isScanning, setIsScanning] = useState(false);
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
+  const [isExeModalOpen, setIsExeModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   const [routerConfig, setRouterConfig] = useState<RouterLoginConfig>({
@@ -357,6 +359,7 @@ export default function App() {
           setCurrentTab('dual');
         }}
         onOpenApkModal={() => setIsApkModalOpen(true)}
+        onOpenExeModal={() => setIsExeModalOpen(true)}
         onOpenGuideModal={() => setIsGuideModalOpen(true)}
       />
 
@@ -412,6 +415,7 @@ export default function App() {
         {currentTab === 'windows_py' && (
           <WindowsPythonView
             lang={lang}
+            onOpenExeModal={() => setIsExeModalOpen(true)}
           />
         )}
 
@@ -447,6 +451,13 @@ export default function App() {
       <ApkDownloadModal
         isOpen={isApkModalOpen}
         onClose={() => setIsApkModalOpen(false)}
+        lang={lang}
+      />
+
+      {/* Windows EXE Installer Modal */}
+      <WindowsExeModal
+        isOpen={isExeModalOpen}
+        onClose={() => setIsExeModalOpen(false)}
         lang={lang}
       />
 

@@ -17,9 +17,10 @@ import { Language } from '../utils/translations';
 
 interface WindowsPythonViewProps {
   lang: Language;
+  onOpenExeModal?: () => void;
 }
 
-export function WindowsPythonView({ lang }: WindowsPythonViewProps) {
+export function WindowsPythonView({ lang, onOpenExeModal }: WindowsPythonViewProps) {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedReqs, setCopiedReqs] = useState(false);
   const [activeTab, setActiveTab] = useState<'script' | 'guide'>('script');
@@ -263,6 +264,46 @@ requests>=2.31.0
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadBatchBuilder = () => {
+    const batchContent = `@echo off
+title B4DCyber Windows Agent - 1-Click PyInstaller EXE Compiler
+color 0B
+echo ======================================================================
+echo     B4DCYBER WINDOWS AGENT - COMPILING PYTHON TO STANDALONE .EXE
+echo ======================================================================
+echo.
+
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    color 0C
+    echo [-] Python not found in PATH! Please install Python from python.org
+    pause
+    exit /b
+)
+
+echo [*] Installing PyInstaller and Paramiko SSH library...
+pip install --upgrade pyinstaller paramiko requests
+
+echo [*] Building B4DCyber-Windows-Agent.exe...
+pyinstaller --noconfirm --onefile --windowed --name "B4DCyber-Windows-Agent" b4d_windows_agent.py
+
+echo.
+echo ======================================================================
+echo [+] BUILD SUCCESSFUL! File ready in: dist\\B4DCyber-Windows-Agent.exe
+echo ======================================================================
+pause
+`;
+    const blob = new Blob([batchContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'build_windows_exe.bat';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -291,13 +332,32 @@ requests>=2.31.0
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {onOpenExeModal && (
+              <button
+                onClick={onOpenExeModal}
+                className="px-4 py-2 text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>{lang === 'ur' ? 'Windows Setup (.EXE) Download Karein' : 'Download Windows Setup (.EXE)'}</span>
+              </button>
+            )}
+
             <button
               onClick={handleDownloadPythonScript}
-              className="px-4 py-2 text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+              className="px-3.5 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
             >
-              <Download className="w-4 h-4" />
-              <span>{lang === 'ur' ? 'b4d_windows_agent.py Download Karein' : 'Download Python Script (.py)'}</span>
+              <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{lang === 'ur' ? '.PY Script' : 'Download .py Script'}</span>
+            </button>
+
+            <button
+              onClick={handleDownloadBatchBuilder}
+              className="px-3 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
+              title="Download 1-Click PyInstaller Batch Script"
+            >
+              <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+              <span>build_exe.bat</span>
             </button>
           </div>
         </div>

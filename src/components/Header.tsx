@@ -8,10 +8,11 @@ interface HeaderProps {
   setLang: (lang: Language) => void;
   onQuickSimulate: () => void;
   onOpenApkModal: () => void;
+  onOpenExeModal: () => void;
   onOpenGuideModal: () => void;
 }
 
-export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimulate, onOpenApkModal, onOpenGuideModal }: HeaderProps) {
+export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimulate, onOpenApkModal, onOpenExeModal, onOpenGuideModal }: HeaderProps) {
   const t = translations[lang];
 
   return (
@@ -166,13 +167,22 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
             <span>{lang === 'ur' ? 'رہنمائی (Guide)' : 'Guide'}</span>
           </button>
 
+          {/* Download Windows EXE Button */}
+          <button
+            onClick={onOpenExeModal}
+            className="px-3 py-1.5 text-xs font-semibold text-cyan-300 bg-slate-800 hover:bg-slate-750 hover:text-white rounded-md transition-colors whitespace-nowrap border border-cyan-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <Laptop className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Windows .EXE</span>
+          </button>
+
           {/* Download APK Button */}
           <button
             onClick={onOpenApkModal}
-            className="px-3 py-1.5 text-xs font-semibold text-cyan-300 bg-slate-800 hover:bg-slate-750 hover:text-white rounded-md transition-colors whitespace-nowrap border border-cyan-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-850 hover:bg-slate-800 hover:text-white rounded-md transition-colors whitespace-nowrap border border-slate-700 flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
-            <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Download APK</span>
+            <Smartphone className="w-3.5 h-3.5 text-slate-400" />
+            <span>Android APK</span>
           </button>
 
           <button
