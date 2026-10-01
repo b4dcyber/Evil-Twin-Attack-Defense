@@ -1,3 +1,18 @@
+export interface RouterLoginConfig {
+  ip: string;
+  port: number;
+  protocol: 'SSH' | 'HTTP_LUCI' | 'HTTPS_REST' | 'TELNET';
+  username: string;
+  password?: string;
+  isConnected: boolean;
+  routerModel?: string;
+  firmwareVersion?: string;
+  uptime?: string;
+  cpuLoad?: string;
+  connectedClientsCount?: number;
+  lastSyncTime?: string;
+}
+
 export type RouterBrand = 'OPENWRT' | 'MIKROTIK' | 'TPLINK' | 'DDWRT' | 'UBIQUITI' | 'UNIVERSAL_LINUX';
 
 export interface DualSsidConfig {

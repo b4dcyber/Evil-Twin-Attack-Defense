@@ -14,7 +14,8 @@ import {
   ArrowRight,
   Fingerprint,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Smartphone
 } from 'lucide-react';
 import { DetectedAccessPoint, WifiProfile } from '../types/cyber';
 import { Language, translations } from '../utils/translations';
@@ -28,6 +29,7 @@ interface AgentViewProps {
   isScanning: boolean;
   onToggleIsolation: (apId: string) => void;
   onTriggerFleetFailover?: () => void;
+  onOpenApkModal?: () => void;
   onAddLog: (type: any, severity: any, title: string, details: string, meta?: any) => void;
 }
 
@@ -39,6 +41,7 @@ export function AgentView({
   isScanning,
   onToggleIsolation,
   onTriggerFleetFailover,
+  onOpenApkModal,
   onAddLog
 }: AgentViewProps) {
   const t = translations[lang];
@@ -130,7 +133,16 @@ export function AgentView({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
+            {onOpenApkModal && (
+              <button
+                onClick={onOpenApkModal}
+                className="px-3.5 py-2 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>{lang === 'ur' ? 'Android APK Download Karein' : 'Download Android APK'}</span>
+              </button>
+            )}
             <button
               onClick={onScan}
               disabled={isScanning}

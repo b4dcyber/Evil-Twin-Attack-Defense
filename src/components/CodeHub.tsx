@@ -16,9 +16,10 @@ import { generateNonce } from '../utils/crypto';
 
 interface CodeHubProps {
   lang: Language;
+  onOpenApkModal?: () => void;
 }
 
-export function CodeHub({ lang }: CodeHubProps) {
+export function CodeHub({ lang, onOpenApkModal }: CodeHubProps) {
   const [activeCodeTab, setActiveCodeTab] = useState<'firmware' | 'agent' | 'android' | 'hostapd' | 'keys'>('firmware');
   const [copied, setCopied] = useState(false);
 
@@ -313,6 +314,15 @@ ctrl_interface_group=0
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenApkModal && (
+              <button
+                onClick={onOpenApkModal}
+                className="px-3.5 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-lg transition-colors flex items-center gap-2 cursor-pointer border border-cyan-800/60 shadow-sm"
+              >
+                <Smartphone className="w-4 h-4 text-cyan-400" />
+                <span>Download APK File</span>
+              </button>
+            )}
             <button
               onClick={() => {
                 let code = '';

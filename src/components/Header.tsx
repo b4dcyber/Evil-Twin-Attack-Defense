@@ -1,15 +1,17 @@
-import { Shield, Radio, ShieldAlert, Terminal, FileText, Globe } from 'lucide-react';
+import { Shield, Radio, ShieldAlert, Terminal, FileText, Globe, Smartphone, Download, HelpCircle, Laptop, Lock, Server } from 'lucide-react';
 import { Language, translations } from '../utils/translations';
 
 interface HeaderProps {
-  currentTab: 'agent' | 'firmware' | 'dual' | 'lab' | 'code' | 'logs';
-  setCurrentTab: (tab: 'agent' | 'firmware' | 'dual' | 'lab' | 'code' | 'logs') => void;
+  currentTab: 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs';
+  setCurrentTab: (tab: 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs') => void;
   lang: Language;
   setLang: (lang: Language) => void;
   onQuickSimulate: () => void;
+  onOpenApkModal: () => void;
+  onOpenGuideModal: () => void;
 }
 
-export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimulate }: HeaderProps) {
+export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimulate, onOpenApkModal, onOpenGuideModal }: HeaderProps) {
   const t = translations[lang];
 
   return (
@@ -60,6 +62,18 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
           </button>
 
           <button
+            onClick={() => setCurrentTab('router_login')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              currentTab === 'router_login'
+                ? 'bg-slate-800 text-cyan-400'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+            }`}
+          >
+            <Server className="w-3.5 h-3.5" />
+            <span>{t.navRouterLogin}</span>
+          </button>
+
+          <button
             onClick={() => setCurrentTab('dual')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
               currentTab === 'dual'
@@ -69,6 +83,18 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
           >
             <Shield className="w-3.5 h-3.5" />
             <span>{t.navDualSsid}</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentTab('windows_py')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              currentTab === 'windows_py'
+                ? 'bg-slate-800 text-cyan-400'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+            }`}
+          >
+            <Laptop className="w-3.5 h-3.5" />
+            <span>{t.navWindowsPy}</span>
           </button>
 
           <button
@@ -130,6 +156,25 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
             </button>
           </div>
 
+          {/* Guide / Help Button */}
+          <button
+            onClick={onOpenGuideModal}
+            className="px-2.5 py-1.5 text-xs font-semibold text-slate-300 bg-slate-900 hover:bg-slate-800 hover:text-white rounded-md transition-colors whitespace-nowrap border border-slate-800 flex items-center gap-1.5 cursor-pointer shadow-sm"
+            title="How to Use Manual"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{lang === 'ur' ? 'رہنمائی (Guide)' : 'Guide'}</span>
+          </button>
+
+          {/* Download APK Button */}
+          <button
+            onClick={onOpenApkModal}
+            className="px-3 py-1.5 text-xs font-semibold text-cyan-300 bg-slate-800 hover:bg-slate-750 hover:text-white rounded-md transition-colors whitespace-nowrap border border-cyan-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Download APK</span>
+          </button>
+
           <button
             onClick={onQuickSimulate}
             className="px-3 py-1.5 text-xs font-medium text-slate-950 bg-cyan-400 hover:bg-cyan-300 rounded-md transition-colors whitespace-nowrap shadow-sm font-semibold"
@@ -154,10 +199,22 @@ export function Header({ currentTab, setCurrentTab, lang, setLang, onQuickSimula
           {t.navFirmware}
         </button>
         <button
+          onClick={() => setCurrentTab('router_login')}
+          className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'router_login' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
+        >
+          {t.navRouterLogin}
+        </button>
+        <button
           onClick={() => setCurrentTab('dual')}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'dual' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
         >
           {t.navDualSsid}
+        </button>
+        <button
+          onClick={() => setCurrentTab('windows_py')}
+          className={`px-3 py-1 text-xs whitespace-nowrap rounded ${currentTab === 'windows_py' ? 'bg-slate-800 text-cyan-400' : 'text-slate-400'}`}
+        >
+          {t.navWindowsPy}
         </button>
         <button
           onClick={() => setCurrentTab('lab')}

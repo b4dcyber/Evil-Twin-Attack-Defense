@@ -6,6 +6,10 @@ import { DualSsidView } from './components/DualSsidView';
 import { SimulationLab } from './components/SimulationLab';
 import { CodeHub } from './components/CodeHub';
 import { AuditLogs } from './components/AuditLogs';
+import { ApkDownloadModal } from './components/ApkDownloadModal';
+import { UserGuideModal } from './components/UserGuideModal';
+import { RouterLoginView } from './components/RouterLoginView';
+import { WindowsPythonView } from './components/WindowsPythonView';
 import { 
   initialHomeProfile, 
   initialDetectedAPs, 
@@ -21,12 +25,13 @@ import {
   BlacklistEntry, 
   AuditLog, 
   AgentFleetDevice, 
-  DualSsidConfig 
+  DualSsidConfig,
+  RouterLoginConfig 
 } from './types/cyber';
 import { Language } from './utils/translations';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'agent' | 'firmware' | 'dual' | 'lab' | 'code' | 'logs'>('dual');
+  const [currentTab, setCurrentTab] = useState<'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs'>('windows_py');
   const [lang, setLang] = useState<Language>('ur'); // Default to Urdu/Roman Urdu per user prompt
 
   const [homeProfile, setHomeProfile] = useState(initialHomeProfile);
@@ -37,6 +42,23 @@ export default function App() {
   const [blacklist, setBlacklist] = useState<BlacklistEntry[]>(initialBlacklist);
   const [logs, setLogs] = useState<AuditLog[]>(initialAuditLogs);
   const [isScanning, setIsScanning] = useState(false);
+  const [isApkModalOpen, setIsApkModalOpen] = useState(false);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+
+  const [routerConfig, setRouterConfig] = useState<RouterLoginConfig>({
+    ip: '192.168.1.1',
+    port: 22,
+    protocol: 'SSH',
+    username: 'root',
+    password: '',
+    isConnected: true,
+    routerModel: 'TP-Link Archer AX73 (OpenWrt Sentinel)',
+    firmwareVersion: 'v23.05.3-B4D',
+    uptime: '14 days, 6 hours',
+    cpuLoad: '0.12, 0.08, 0.05',
+    connectedClientsCount: initialClients.length,
+    lastSyncTime: 'Just now'
+  });
 
   const addLog = (
     type: AuditLog['type'],
@@ -334,6 +356,8 @@ export default function App() {
           handleInjectEvilTwin();
           setCurrentTab('dual');
         }}
+        onOpenApkModal={() => setIsApkModalOpen(true)}
+        onOpenGuideModal={() => setIsGuideModalOpen(true)}
       />
 
       {/* Main Viewport Container */}
@@ -347,6 +371,7 @@ export default function App() {
             isScanning={isScanning}
             onToggleIsolation={handleToggleIsolation}
             onTriggerFleetFailover={handleTriggerFleetFailover}
+            onOpenApkModal={() => setIsApkModalOpen(true)}
             onAddLog={addLog}
           />
         )}
@@ -363,6 +388,17 @@ export default function App() {
           />
         )}
 
+        {currentTab === 'router_login' && (
+          <RouterLoginView
+            routerConfig={routerConfig}
+            onUpdateRouterConfig={(cfg) => setRouterConfig(prev => ({ ...prev, ...cfg }))}
+            clients={clients}
+            blacklist={blacklist}
+            lang={lang}
+            onAddLog={addLog}
+          />
+        )}
+
         {currentTab === 'dual' && (
           <DualSsidView
             dualConfig={dualConfig}
@@ -370,6 +406,12 @@ export default function App() {
             lang={lang}
             onTriggerFleetFailover={handleTriggerFleetFailover}
             onRestoreFleetToPrimary={handleRestoreFleetToPrimary}
+          />
+        )}
+
+        {currentTab === 'windows_py' && (
+          <WindowsPythonView
+            lang={lang}
           />
         )}
 
@@ -386,7 +428,10 @@ export default function App() {
         )}
 
         {currentTab === 'code' && (
-          <CodeHub lang={lang} />
+          <CodeHub 
+            lang={lang} 
+            onOpenApkModal={() => setIsApkModalOpen(true)}
+          />
         )}
 
         {currentTab === 'logs' && (
@@ -397,6 +442,20 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Android APK Download & Installation Modal */}
+      <ApkDownloadModal
+        isOpen={isApkModalOpen}
+        onClose={() => setIsApkModalOpen(false)}
+        lang={lang}
+      />
+
+      {/* User Guide & Operational Manual Modal */}
+      <UserGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
+        lang={lang}
+      />
 
       {/* Clean Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-400">
