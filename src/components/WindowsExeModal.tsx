@@ -176,9 +176,7 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
               Windows Standalone Executable (.EXE)
             </span>
             <h2 className="text-lg sm:text-xl font-bold text-white mt-0.5">
-              {lang === 'ur'
-                ? 'Windows Setup (.EXE) Download Aur Install'
-                : 'Download B4DCyber Windows Agent (.EXE Installer)'}
+              Download B4DCyber Windows Agent (.EXE Installer)
             </h2>
             <p className="text-xs text-slate-400 mt-1">
               Supports Windows 10, Windows 11 &amp; Windows Server (64-bit) · Double-Click to Install &amp; Run
@@ -198,9 +196,7 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                {lang === 'ur'
-                  ? 'Ready-made executable file. Is par double-click karke direct Windows mein run karein, kisi Python ya command ki zaroorat nahi.'
-                  : 'Pre-packaged standalone executable. Double-click to launch background Wi-Fi guard on Windows.'}
+                Pre-packaged standalone executable. Double-click to launch background Wi-Fi guard on Windows.
               </p>
               <div className="text-[10px] text-slate-500 font-mono mt-2">
                 File: B4DCyber-Windows-Agent-Setup-v2.4.exe (18.6 MB)
@@ -227,9 +223,7 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                {lang === 'ur'
-                  ? 'Agar aap khud source code se fresh .exe banana chahein toh yeh 1-click batch script download karein jo PyInstaller se khud .exe bana deti hai.'
-                  : 'Automated PyInstaller build script to compile your own custom signed executable locally on Windows.'}
+                Automated PyInstaller build script to compile your own custom signed executable locally on Windows.
               </p>
               <div className="text-[10px] text-slate-500 font-mono mt-2">
                 File: build_windows_exe.bat (1-Click Run)
@@ -251,22 +245,16 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
           <div className="p-3 bg-emerald-950/40 border border-emerald-800/80 rounded-xl flex items-center gap-2.5 text-xs text-emerald-300">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>
-              {lang === 'ur'
-                ? 'Windows Setup .EXE download shuru ho chuki hai! Aapke Downloads folder mein save ho gayi hai.'
-                : 'Windows Setup .EXE download initiated! File has been saved to your Downloads directory.'}
+              Windows Setup .EXE download initiated! File has been saved to your Downloads directory.
             </span>
           </div>
         )}
 
-        {/* Windows Installation Instructions (Roman Urdu & English) */}
+        {/* Windows Installation Instructions */}
         <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3 text-xs">
           <div className="font-bold text-white flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span>
-              {lang === 'ur'
-                ? 'Windows Mein Install Aur Run Karne Ka Tareeqa:'
-                : 'How to Install & Run on Windows:'}
-            </span>
+            <span>How to Install &amp; Run on Windows:</span>
           </div>
 
           <div className="space-y-2.5 text-slate-300">
@@ -275,10 +263,8 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
                 1
               </span>
               <div>
-                <strong>{lang === 'ur' ? 'Setup .EXE Par Double-Click Karein:' : 'Double-Click Setup .EXE:'}</strong>{' '}
-                {lang === 'ur'
-                  ? 'Downloaded file `B4DCyber-Windows-Agent-Setup-v2.4.exe` par double click karein.'
-                  : 'Double-click the downloaded setup file to launch.'}
+                <strong>Double-Click Setup .EXE:</strong>{' '}
+                Double-click the downloaded setup file <code>B4DCyber-Windows-Agent-Setup-v2.4.exe</code> to launch.
               </div>
             </div>
 
@@ -287,10 +273,8 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
                 2
               </span>
               <div>
-                <strong>{lang === 'ur' ? 'Windows SmartScreen Notice:' : 'Windows SmartScreen Info:'}</strong>{' '}
-                {lang === 'ur'
-                  ? 'Agar Windows blue popup "Windows protected your PC" dikhaye, toh **"More info"** par click karein aur **"Run anyway"** dabayein.'
-                  : 'If Windows displays a SmartScreen popup, click "More info" and then select "Run anyway".'}
+                <strong>Windows SmartScreen Info:</strong>{' '}
+                If Windows displays a SmartScreen dialog, click "More info" and then select "Run anyway".
               </div>
             </div>
 
@@ -299,10 +283,8 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
                 3
               </span>
               <div>
-                <strong>{lang === 'ur' ? 'Background System Tray Guard:' : 'Background Protection Active:'}</strong>{' '}
-                {lang === 'ur'
-                  ? 'App Windows ke taskbar (System Tray) mein background service ke tor par chalne lage gi aur 24/7 Wi-Fi BSSID ko monitor kare gi.'
-                  : 'The agent will run silently in your Windows System Tray and continuously monitor ambient Wi-Fi BSSIDs.'}
+                <strong>Background Protection Active:</strong>{' '}
+                The agent will run silently in your Windows System Tray and continuously monitor ambient Wi-Fi BSSIDs.
               </div>
             </div>
 
@@ -311,10 +293,8 @@ Filename: "{app}\\B4DCyber-Windows-Agent.exe"; Description: "Launch B4DCyber Win
                 4
               </span>
               <div>
-                <strong>{lang === 'ur' ? 'Automatic Protection:' : 'Automatic Protection & Router Login:'}</strong>{' '}
-                {lang === 'ur'
-                  ? 'Jaise hi koi Evil Twin fake hotspot aayega, yeh Windows ka Wi-Fi auto-disconnect karegi, popup warning degi, aur seedha router ko login karke hacker ko ban kar degi!'
-                  : 'Upon detecting a rogue cloned AP, the agent drops connection, triggers a Windows desktop alert, and logs in to the router to ban the hacker.'}
+                <strong>Automatic Protection &amp; Router Login:</strong>{' '}
+                Upon detecting a rogue cloned AP, the agent drops connection, triggers a Windows desktop alert, and logs in to the router to ban the hacker.
               </div>
             </div>
           </div>

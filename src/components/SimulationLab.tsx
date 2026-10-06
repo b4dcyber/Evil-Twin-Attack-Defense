@@ -156,7 +156,7 @@ export function SimulationLab({
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-cyan-950 text-cyan-300 border border-cyan-800/60">
                 <Zap className="w-3.5 h-3.5" />
-                {lang === 'ur' ? 'Evil Twin Attack Defense Sandbox' : 'Live Attack & Defense Sandbox'}
+                Live Attack &amp; Defense Sandbox
               </span>
               <span className="text-xs text-slate-400">·</span>
               <span className="text-xs text-slate-400">Dual-SSID &amp; Multi-Agent Swarm</span>
@@ -174,7 +174,7 @@ export function SimulationLab({
             className="px-3.5 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors border border-slate-700 flex items-center gap-2 cursor-pointer shrink-0"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>{lang === 'ur' ? 'Lab Ko Reset Karein' : 'Reset Sandbox State'}</span>
+            <span>Reset Sandbox State</span>
           </button>
         </div>
       </div>
@@ -190,7 +190,7 @@ export function SimulationLab({
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
-              {lang === 'ur' ? 'Scenario 01' : 'Scenario 01'}
+              Scenario 01
             </div>
             <h2 className="text-sm font-bold text-white mt-1">
               {t.scenario1Title}
@@ -207,7 +207,7 @@ export function SimulationLab({
               className="w-full py-2 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Play className="w-3 h-3 fill-current" />
-              <span>{lang === 'ur' ? 'Handshake Test' : 'Run Handshake'}</span>
+              <span>Run Handshake</span>
             </button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export function SimulationLab({
               <ShieldAlert className="w-4 h-4" />
             </div>
             <div className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider">
-              {lang === 'ur' ? 'Scenario 02' : 'Scenario 02'}
+              Scenario 02
             </div>
             <h2 className="text-sm font-bold text-white mt-1">
               {t.scenario2Title}
@@ -238,7 +238,7 @@ export function SimulationLab({
               className="w-full py-2 px-3 text-xs font-semibold bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Flame className="w-3 h-3 fill-current" />
-              <span>{lang === 'ur' ? 'Evil Twin Hamla' : 'Test Evil Twin'}</span>
+              <span>Test Evil Twin</span>
             </button>
           </div>
         </div>
@@ -252,7 +252,7 @@ export function SimulationLab({
               <Terminal className="w-4 h-4" />
             </div>
             <div className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">
-              {lang === 'ur' ? 'Scenario 03' : 'Scenario 03'}
+              Scenario 03
             </div>
             <h2 className="text-sm font-bold text-white mt-1">
               {t.scenario3Title}
@@ -269,7 +269,7 @@ export function SimulationLab({
               className="w-full py-2 px-3 text-xs font-semibold bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Play className="w-3 h-3 fill-current" />
-              <span>{lang === 'ur' ? 'Hacker Deauth Test' : 'Test Hacker Probe'}</span>
+              <span>Test Hacker Probe</span>
             </button>
           </div>
         </div>
@@ -283,7 +283,7 @@ export function SimulationLab({
               <Layers className="w-4 h-4" />
             </div>
             <div className="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider">
-              {lang === 'ur' ? 'Scenario 04 (Special)' : 'Scenario 04 (Special)'}
+              Scenario 04
             </div>
             <h2 className="text-sm font-bold text-white mt-1">
               {t.scenario4Title}
@@ -300,7 +300,7 @@ export function SimulationLab({
               className="w-full py-2 px-3 text-xs font-semibold bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 text-slate-950 font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Zap className="w-3 h-3 fill-current" />
-              <span>{lang === 'ur' ? 'Sary Agents Shift Karein' : 'Swarm Failover All'}</span>
+              <span>Swarm Failover All</span>
             </button>
           </div>
         </div>
@@ -312,7 +312,7 @@ export function SimulationLab({
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-                {lang === 'ur' ? 'Live Execution Logic (Dual-SSID & Swarm Failover)' : 'Live 5-Step Execution Logic (Dual-SSID & Swarm Failover)'}
+                Live 5-Step Execution Logic (Dual-SSID & Swarm Failover)
               </div>
               <h2 className="text-base font-bold text-white mt-0.5">
                 {activeScenario === 1 && 'Authentic Router Verification in Progress'}

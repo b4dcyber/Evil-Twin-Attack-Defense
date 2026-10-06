@@ -323,12 +323,10 @@ pause
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {lang === 'ur' ? 'Windows Python Agent & Router Login' : 'Windows Python Security Agent & Router Client'}
+              Windows Python Security Agent &amp; Router Client
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-              {lang === 'ur'
-                ? 'Yeh complete Python script hai jisko aap apne Windows PC/Laptop par direct chala saktay hain. Yeh Windows par Wi-Fi BSSID scan karta hai, fake hotspot pakad kar auto-connect rokta hai, aur seedha router ko login karke hacker ko blacklist karta hai.'
-                : 'Standalone Python agent designed for Microsoft Windows. Inspects ambient BSSIDs via netsh wlan, aborts auto-connect to rogue APs, switches to Secondary Vault SSID, and logs in to your router gateway to enforce firewall rules.'}
+              Standalone Python agent designed for Microsoft Windows. Inspects ambient BSSIDs via netsh wlan, aborts auto-connect to rogue APs, switches to Secondary Vault SSID, and logs in to your router gateway to enforce firewall rules.
             </p>
           </div>
 
@@ -339,7 +337,7 @@ pause
                 className="px-4 py-2 text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
               >
                 <Download className="w-4 h-4" />
-                <span>{lang === 'ur' ? 'Windows Setup (.EXE) Download Karein' : 'Download Windows Setup (.EXE)'}</span>
+                <span>Download Windows Setup (.EXE)</span>
               </button>
             )}
 
@@ -348,7 +346,7 @@ pause
               className="px-3.5 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
             >
               <FileCode className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{lang === 'ur' ? '.PY Script' : 'Download .py Script'}</span>
+              <span>Download .py Script</span>
             </button>
 
             <button
@@ -382,7 +380,7 @@ pause
           }`}
         >
           <Terminal className="w-3.5 h-3.5" />
-          <span>{lang === 'ur' ? 'Windows Par Chalane Ka Tareeqa' : 'Windows Setup Instructions'}</span>
+          <span>Windows Setup Instructions</span>
         </button>
       </div>
 
@@ -419,27 +417,27 @@ pause
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 text-xs text-slate-300">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Terminal className="w-4 h-4 text-cyan-400" />
-            <span>{lang === 'ur' ? 'Windows Laptop / PC Par Chalane Ke 3 Steps:' : 'How to Run on Windows (3 Easy Steps):'}</span>
+            <span>How to Run on Windows (3 Easy Steps):</span>
           </h2>
 
           <div className="space-y-4">
             <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
               <div className="font-bold text-white flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center font-mono text-xs">1</span>
-                <span>Python Install Karein (Agar pehle se nahi hai)</span>
+                <span>Install Python (If not already installed)</span>
               </div>
               <p className="text-slate-400 leading-relaxed pl-7">
-                Agar aapke Windows PC par Python install nahi hai toh <a href="https://www.python.org/downloads/" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">python.org/downloads</a> se Python 3 download karein aur install karte waqt <strong>"Add Python to PATH"</strong> checkbox zaroor tick karein.
+                If Python is not installed on your Windows PC, download Python 3 from <a href="https://www.python.org/downloads/" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">python.org/downloads</a> and ensure you check the <strong>"Add Python to PATH"</strong> checkbox during setup.
               </p>
             </div>
 
             <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
               <div className="font-bold text-white flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center font-mono text-xs">2</span>
-                <span>SSH Library Install Karein (Router Login Ke Liye)</span>
+                <span>Install Required SSH Library</span>
               </div>
               <p className="text-slate-400 leading-relaxed pl-7">
-                Windows Command Prompt (CMD) ya PowerShell open karein aur yeh command chalayein:
+                Open Windows Command Prompt (CMD) or PowerShell and run:
               </p>
               <div className="pl-7 pt-1 font-mono text-cyan-300 bg-slate-900 p-2.5 rounded border border-slate-800">
                 pip install paramiko
@@ -449,16 +447,16 @@ pause
             <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
               <div className="font-bold text-white flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center font-mono text-xs">3</span>
-                <span>Script Download Karke Run Karein</span>
+                <span>Download &amp; Run the Agent</span>
               </div>
               <p className="text-slate-400 leading-relaxed pl-7">
-                Uper diye gaye <strong>"Download Python Script (.py)"</strong> button se file save karein aur CMD mein folder khol kar run karein:
+                Download the script using the <strong>"Download Script (.py)"</strong> button above and launch it from CMD:
               </p>
               <div className="pl-7 pt-1 font-mono text-cyan-300 bg-slate-900 p-2.5 rounded border border-slate-800">
                 python b4d_windows_agent.py
               </div>
               <p className="text-emerald-400 pl-7 text-[11px] font-semibold">
-                ✓ Ab aapka Windows laptop 24/7 monitor hota rahega. Jaise hi koi fake hotspot samne aayega, Windows auto-connect abort karega aur router ko login karke hacker ko blacklist kar dega!
+                ✓ Your Windows laptop is now monitored 24/7. When a rogue Evil Twin AP is spotted, Windows immediately aborts the connection, triggers swarm failover, and sends a remote layer-2 MAC blacklist command to your router!
               </p>
             </div>
           </div>

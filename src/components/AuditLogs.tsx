@@ -62,12 +62,10 @@ export function AuditLogs({ logs, lang, onClearLogs }: AuditLogsProps) {
               <span className="text-xs text-slate-400 font-mono">Live Wi-Fi Security Events</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {lang === 'ur' ? 'Security Audit & Forensic Logs' : 'Forensic Security Event Stream'}
+              Forensic Security Event Stream
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-              {lang === 'ur'
-                ? 'Har BSSID scan, crypto challenge, Evil Twin interception aur blacklist action ka complete forensic record.'
-                : 'Immutable audit trail capturing all 802.11 beacon scans, nonce challenges, rogue AP drops, and blacklist enforcement.'}
+              Immutable audit trail capturing all 802.11 beacon scans, nonce challenges, rogue AP drops, and blacklist enforcement.
             </p>
           </div>
 

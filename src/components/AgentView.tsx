@@ -47,9 +47,14 @@ export function AgentView({
   const t = translations[lang];
 
   // Interactive challenge inspection state
-  const [selectedAp, setSelectedAp] = useState<DetectedAccessPoint>(
-    detectedAPs.find(ap => ap.isEvilTwin) || detectedAPs[0]
-  );
+  const [selectedApId, setSelectedApId] = useState<string | null>(null);
+
+  const selectedAp: DetectedAccessPoint | null = 
+    (selectedApId ? detectedAPs.find(ap => ap.id === selectedApId) : null) ||
+    detectedAPs.find(ap => ap.isEvilTwin) ||
+    detectedAPs[0] ||
+    null;
+
   const [challenging, setChallenging] = useState(false);
   const [challengeResult, setChallengeResult] = useState<{
     nonce: string;
@@ -70,9 +75,7 @@ export function AgentView({
         nonce,
         signature: 'INVALID_AUTH_ERROR: AP rejected or failed Ed25519 signature.',
         passed: false,
-        reason: lang === 'ur'
-          ? 'Fake hotspot k pas router ki secret key nahi hai! Signature verification mukammal fail ho gaya.'
-          : 'Rogue AP failed to provide a valid Ed25519 cryptographic signature. Network interface isolated.'
+        reason: 'Rogue AP failed to provide a valid Ed25519 cryptographic signature. Network interface isolated.'
       });
       onAddLog(
         'CRYPTO_CHALLENGE',
@@ -87,9 +90,7 @@ export function AgentView({
         nonce,
         signature: validSig,
         passed: true,
-        reason: lang === 'ur'
-          ? 'Asli router ne sahi Ed25519 signature bhej di! Agent ne connection verify krli.'
-          : 'Mutual cryptographic verification passed! Genuine router Ed25519 signature verified.'
+        reason: 'Mutual cryptographic verification passed! Genuine router Ed25519 signature verified.'
       });
       onAddLog(
         'CRYPTO_CHALLENGE',
@@ -120,9 +121,7 @@ export function AgentView({
               <span className="text-xs text-slate-400 font-mono">wlan0: Managed</span>
               <span className="text-xs text-slate-400">·</span>
               <span className={`text-xs font-semibold ${isCurrentlyProtected ? 'text-amber-400' : 'text-emerald-400'}`}>
-                {isCurrentlyProtected
-                  ? (lang === 'ur' ? 'Auto-Disconnect Active (Suraksha Chalu)' : 'Auto-Disconnect Engaged')
-                  : (lang === 'ur' ? 'Secure Home Network Connected' : 'Secured & Synchronized')}
+                {isCurrentlyProtected ? 'Auto-Disconnect Engaged' : 'Secured & Synchronized'}
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
@@ -140,7 +139,7 @@ export function AgentView({
                 className="px-3.5 py-2 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
               >
                 <Smartphone className="w-3.5 h-3.5" />
-                <span>{lang === 'ur' ? 'Android APK Download Karein' : 'Download Android APK'}</span>
+                <span>Download Android APK</span>
               </button>
             )}
             <button
@@ -158,7 +157,7 @@ export function AgentView({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-4 border-t border-slate-800/80">
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Trusted Home SSID' : 'Target Home SSID'}
+              Target Home SSID
             </div>
             <div className="text-sm font-semibold text-white mt-0.5 flex items-center gap-1.5">
               <Wifi className="w-3.5 h-3.5 text-cyan-400" />
@@ -171,7 +170,7 @@ export function AgentView({
 
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Expected Channel & Band' : 'Radio Profile'}
+              Radio Profile
             </div>
             <div className="text-sm font-semibold text-white mt-0.5">
               Ch {homeProfile.expectedChannel} · {homeProfile.expectedFrequency}
@@ -183,7 +182,7 @@ export function AgentView({
 
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Physical Geofence' : 'Home Geofence'}
+              Home Geofence
             </div>
             <div className="text-sm font-semibold text-white mt-0.5 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-emerald-400" />
@@ -196,7 +195,7 @@ export function AgentView({
 
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Evil Twin Guard Status' : 'Threat Interception'}
+              Threat Interception
             </div>
             <div className="text-sm font-semibold mt-0.5 flex items-center gap-1.5 text-amber-400">
               <ShieldAlert className="w-3.5 h-3.5" />
@@ -224,9 +223,7 @@ export function AgentView({
                 </span>
               </div>
               <p className="text-xs text-amber-200/80 mt-1">
-                {lang === 'ur'
-                  ? 'Kisi ne apke ghar ke Wi-Fi ke naam se fake hotspot banaya hai! Hamare agent ne BSSID aur MAC mismatch detect kar k auto-connect foran rok diya hai aur network interface ko isolate kar diya hai.'
-                  : 'An attacker has broadcasted an unauthorized rogue hotspot cloning your home Wi-Fi name with elevated transmit power. Pre-connection inspection aborted auto-connect to protect credentials and private traffic.'}
+                An attacker has broadcasted an unauthorized rogue hotspot cloning your home Wi-Fi name with elevated transmit power. Pre-connection inspection aborted auto-connect to protect credentials and private traffic.
               </p>
             </div>
           </div>
@@ -236,17 +233,17 @@ export function AgentView({
                 onClick={onTriggerFleetFailover}
                 className="px-3 py-1.5 text-xs font-semibold bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-lg transition-colors whitespace-nowrap cursor-pointer shrink-0 shadow-sm"
               >
-                {lang === 'ur' ? 'Secondary SSID Par Shift Karein' : 'Failover All to Vault SSID'}
+                Failover All to Vault SSID
               </button>
             )}
             <button
               onClick={() => {
                 const rogue = detectedAPs.find(ap => ap.isEvilTwin);
-                if (rogue) setSelectedAp(rogue);
+                if (rogue) setSelectedApId(rogue.id);
               }}
               className="px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg transition-colors whitespace-nowrap cursor-pointer shrink-0"
             >
-              {lang === 'ur' ? 'Forensic Jaiza' : 'Inspect Threat'}
+              Inspect Threat
             </button>
           </div>
         </div>
@@ -264,27 +261,36 @@ export function AgentView({
               </h2>
             </div>
             <span className="text-xs text-slate-400">
-              {detectedAPs.length} {lang === 'ur' ? 'Networks Dastiyab' : 'APs Visible'}
+              {detectedAPs.length} APs Visible
             </span>
           </div>
 
           <div className="space-y-3">
-            {detectedAPs.map((ap) => {
-              const isSelected = selectedAp.id === ap.id;
-              return (
-                <div
-                  key={ap.id}
-                  onClick={() => setSelectedAp(ap)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                    ap.isEvilTwin
-                      ? isSelected
-                        ? 'bg-amber-950/30 border-amber-500 shadow-sm'
-                        : 'bg-slate-900/90 border-amber-900/60 hover:border-amber-700/80'
-                      : isSelected
-                      ? 'bg-slate-900 border-cyan-500 shadow-sm'
-                      : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
+            {detectedAPs.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-400 space-y-2 bg-slate-900/60 rounded-xl border border-slate-800">
+                <Radio className="w-8 h-8 text-slate-600 mx-auto" />
+                <p className="font-semibold text-slate-300">Ambient Spectrum Clean</p>
+                <p className="text-[11px] text-slate-500">
+                  Click "Scan Ambient Wi-Fi" above to inspect surrounding beacons and discover active BSSIDs on 2.4/5GHz.
+                </p>
+              </div>
+            ) : (
+              detectedAPs.map((ap) => {
+                const isSelected = selectedAp?.id === ap.id;
+                return (
+                  <div
+                    key={ap.id}
+                    onClick={() => setSelectedApId(ap.id)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                      ap.isEvilTwin
+                        ? isSelected
+                          ? 'bg-amber-950/30 border-amber-500 shadow-sm'
+                          : 'bg-slate-900/90 border-amber-900/60 hover:border-amber-700/80'
+                        : isSelected
+                        ? 'bg-slate-900 border-cyan-500 shadow-sm'
+                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div
@@ -337,7 +343,7 @@ export function AgentView({
 
                         {ap.isEvilTwin && ap.evilTwinReason && (
                           <div className="mt-2 text-xs text-red-300/90 bg-red-950/40 p-2 rounded border border-red-900/40">
-                            <strong>{lang === 'ur' ? 'Khatray Ki Wajah:' : 'Threat Vector:'}</strong> {ap.evilTwinReason}
+                            <strong>Threat Vector:</strong> {ap.evilTwinReason}
                           </div>
                         )}
                       </div>
@@ -358,12 +364,12 @@ export function AgentView({
                         {ap.isolationActive ? (
                           <>
                             <Lock className="w-3 h-3 text-amber-400" />
-                            <span>{lang === 'ur' ? 'Quarantine Active' : 'Quarantine Active'}</span>
+                            <span>Quarantine Active</span>
                           </>
                         ) : (
                           <>
                             <Unlock className="w-3 h-3 text-slate-400" />
-                            <span>{lang === 'ur' ? 'Quarantine Lagayein' : 'Isolate Interface'}</span>
+                            <span>Isolate Interface</span>
                           </>
                         )}
                       </button>
@@ -377,7 +383,7 @@ export function AgentView({
                   </div>
                 </div>
               );
-            })}
+            }))}
           </div>
         </div>
 
@@ -386,31 +392,40 @@ export function AgentView({
           <div className="flex items-center gap-2">
             <Fingerprint className="w-4 h-4 text-cyan-400" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
-              {lang === 'ur' ? 'Pre-Connection Crypto Jaiza' : 'Pre-Connection Verification Sandbox'}
+              Pre-Connection Verification Sandbox
             </h2>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div>
-                <div className="text-xs text-slate-400">Target Access Point</div>
-                <div className="text-base font-bold text-white mt-0.5">
-                  {selectedAp.ssid}
-                </div>
-              </div>
-              <span className={`text-xs px-2.5 py-1 rounded font-mono font-semibold ${
-                selectedAp.isEvilTwin 
-                  ? 'bg-red-950 text-red-300 border border-red-800' 
-                  : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-              }`}>
-                {selectedAp.isEvilTwin ? 'ROGUE AP' : 'AUTHENTIC AP'}
-              </span>
+          {!selectedAp ? (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center space-y-3">
+              <Radio className="w-8 h-8 text-slate-600 mx-auto animate-pulse" />
+              <h3 className="text-sm font-bold text-white">No Access Point Selected</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                Click <strong>"Scan Ambient Wi-Fi"</strong> on the left or launch an attack scenario in the Attack Lab to inspect surrounding beacons and test zero-trust pre-connection verification.
+              </p>
             </div>
+          ) : (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                  <div className="text-xs text-slate-400">Target Access Point</div>
+                  <div className="text-base font-bold text-white mt-0.5">
+                    {selectedAp.ssid}
+                  </div>
+                </div>
+                <span className={`text-xs px-2.5 py-1 rounded font-mono font-semibold ${
+                  selectedAp.isEvilTwin 
+                    ? 'bg-red-950 text-red-300 border border-red-800' 
+                    : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                }`}>
+                  {selectedAp.isEvilTwin ? 'ROGUE AP' : 'AUTHENTIC AP'}
+                </span>
+              </div>
 
             {/* 5-Step Execution Inspection Flow (Slide 6 from Proposal) */}
             <div className="space-y-3">
               <div className="text-xs font-semibold text-slate-300">
-                {lang === 'ur' ? '5-Step Zero-Trust Wi-Fi Flow:' : '5-Step Zero-Trust Wi-Fi Flow:'}
+                5-Step Zero-Trust Wi-Fi Flow:
               </div>
 
               {/* Step 1 */}
@@ -509,12 +524,12 @@ export function AgentView({
                 {challenging ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>{lang === 'ur' ? 'Handshake Challenge Bheja Ja Raha Hai...' : 'Exchanging Cryptographic Nonce...'}</span>
+                    <span>Exchanging Cryptographic Nonce...</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    <span>{lang === 'ur' ? 'Challenge Test Karein' : 'Execute Nonce Challenge Test'}</span>
+                    <span>Execute Nonce Challenge Test</span>
                   </>
                 )}
               </button>
@@ -542,6 +557,7 @@ export function AgentView({
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

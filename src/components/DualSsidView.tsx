@@ -146,7 +146,7 @@ wpa_key_mgmt=WPA-PSK`;
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-cyan-950 text-cyan-300 border border-cyan-800/60">
                 <Layers className="w-3.5 h-3.5" />
-                {lang === 'ur' ? 'Dual-SSID & Agent Swarm Failover' : 'Dual-SSID Tripwire & Fleet Failover'}
+                Dual-SSID Tripwire &amp; Fleet Failover
               </span>
               <span className="text-xs text-slate-400">·</span>
               <span className="text-xs text-slate-400 font-mono">Compatible with ANY Router</span>
@@ -219,8 +219,8 @@ wpa_key_mgmt=WPA-PSK`;
 
             <div className="text-[11px] text-slate-400 mt-2">
               {dualConfig.primaryStatus === 'COMPROMISED_EVIL_TWIN'
-                ? (lang === 'ur' ? 'Khatra: Is SSID par Evil Twin attack ho gaya hai. Agents yahan se nikal chukay hain.' : 'Threat: Rogue hotspot detected cloning this SSID. Traffic shifted to secondary.')
-                : (lang === 'ur' ? 'Aam halat mein tamam devices is par connect rehti hain.' : 'Standard operational SSID for day-to-day devices.')}
+                ? 'Threat: Rogue hotspot detected cloning this SSID. Traffic shifted to secondary vault.'
+                : 'Standard operational SSID for day-to-day devices.'}
             </div>
           </div>
 
@@ -256,8 +256,8 @@ wpa_key_mgmt=WPA-PSK`;
 
             <div className="text-[11px] text-slate-300 mt-2">
               {isFailoverActive
-                ? (lang === 'ur' ? 'ACTIVE: Tamam agents mehfooz tareeqay se is secret vault par chal rahay hain.' : 'ACTIVE: Swarm failover active. All authenticated agents connected securely.')
-                : (lang === 'ur' ? 'Agent ko iska pehle se pata hai. Attack ke waqt foran active hoga.' : 'Pre-shared cryptographic token stored in endpoint agents. Instant auto-connect upon attack.')}
+                ? 'ACTIVE: Swarm failover active. All authenticated agents connected securely.'
+                : 'Pre-shared cryptographic token stored in endpoint agents. Instant auto-connect upon attack.'}
             </div>
           </div>
         </div>
@@ -273,57 +273,69 @@ wpa_key_mgmt=WPA-PSK`;
             </h2>
           </div>
           <span className="text-xs text-slate-400 font-mono">
-            {lang === 'ur' ? 'Multi-Agent Swarm Orchestration' : 'Multi-Agent Swarm Orchestration'}
+            Multi-Agent Swarm Orchestration
           </span>
         </div>
 
-        <div className="divide-y divide-slate-800/80">
-          {fleetDevices.map((device) => {
-            let icon = <Smartphone className="w-4 h-4 text-cyan-400" />;
-            if (device.deviceType === 'LAPTOP') icon = <Laptop className="w-4 h-4 text-cyan-400" />;
-            else if (device.deviceType === 'TABLET') icon = <Tablet className="w-4 h-4 text-cyan-400" />;
-            else if (device.deviceType === 'WORKSTATION') icon = <Server className="w-4 h-4 text-cyan-400" />;
+        {fleetDevices.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-400 space-y-2">
+            <Smartphone className="w-8 h-8 text-slate-600 mx-auto" />
+            <p className="font-medium text-slate-300">
+              No Agent Fleet Nodes Registered Yet
+            </p>
+            <p className="max-w-md mx-auto text-[11px] text-slate-400">
+              Authenticate your Wi-Fi router on the Router Login tab to pull live station data and compile your custom mobile agent with SHA-256 MAC Hashing &amp; EAP-TTLS.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-800/80">
+            {fleetDevices.map((device) => {
+              let icon = <Smartphone className="w-4 h-4 text-cyan-400" />;
+              if (device.deviceType === 'LAPTOP') icon = <Laptop className="w-4 h-4 text-cyan-400" />;
+              else if (device.deviceType === 'TABLET') icon = <Tablet className="w-4 h-4 text-cyan-400" />;
+              else if (device.deviceType === 'WORKSTATION') icon = <Server className="w-4 h-4 text-cyan-400" />;
 
-            const isSecuredOnSecondary = device.failoverStatus === 'SECURED_ON_SECONDARY';
+              const isSecuredOnSecondary = device.failoverStatus === 'SECURED_ON_SECONDARY';
 
-            return (
-              <div key={device.id} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
-                    {icon}
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <span>{device.name}</span>
-                      <span className="text-[10px] text-slate-500 font-mono">({device.deviceType})</span>
+              return (
+                <div key={device.id} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
+                      {icon}
                     </div>
-                    <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                      MAC: {device.mac} · Last Sync: {device.lastHandshake}
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>{device.name}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">({device.deviceType})</span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                        MAC: {device.mac} · Last Sync: {device.lastHandshake}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-xs font-semibold text-white flex items-center gap-1.5 justify-end">
+                        <Wifi className={`w-3.5 h-3.5 ${isSecuredOnSecondary ? 'text-emerald-400' : 'text-cyan-400'}`} />
+                        <span>{device.currentConnectedSsid}</span>
+                      </div>
+                      <div className="text-[10px] font-mono mt-0.5">
+                        {isSecuredOnSecondary ? (
+                          <span className="text-emerald-400 font-bold flex items-center gap-1 justify-end">
+                            <CheckCircle2 className="w-3 h-3" /> SECURED ON VAULT
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">SYNCED PRIMARY</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-xs font-semibold text-white flex items-center gap-1.5 justify-end">
-                      <Wifi className={`w-3.5 h-3.5 ${isSecuredOnSecondary ? 'text-emerald-400' : 'text-cyan-400'}`} />
-                      <span>{device.currentConnectedSsid}</span>
-                    </div>
-                    <div className="text-[10px] font-mono mt-0.5">
-                      {isSecuredOnSecondary ? (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1 justify-end">
-                          <CheckCircle2 className="w-3 h-3" /> SECURED ON VAULT
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">SYNCED PRIMARY</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {allMigrated && (
           <div className="p-3 bg-emerald-950/40 border-t border-emerald-800 text-xs text-emerald-300 flex items-center justify-between">
@@ -347,12 +359,10 @@ wpa_key_mgmt=WPA-PSK`;
           <div>
             <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Server className="w-4 h-4 text-cyan-400" />
-              <span>Universal Router Setup (Har Router Se Connect Ho Jaye)</span>
+              <span>Universal Router Setup &amp; Configuration</span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              {lang === 'ur'
-                ? 'Apke paas koi bhi router ho (TP-Link, MikroTik, OpenWrt, DD-WRT, Ubiquiti, ya standard Linux/Raspberry Pi), ye Dual-SSID config foran apply ho jati hai.'
-                : 'Zero-lockin universal framework. One-command dual-SSID activation for all major enterprise and consumer router platforms.'}
+              Zero-lockin universal framework. One-command dual-SSID activation for all major enterprise and consumer router platforms (TP-Link, MikroTik, OpenWrt, DD-WRT, Ubiquiti, or Linux AP).
             </p>
           </div>
 

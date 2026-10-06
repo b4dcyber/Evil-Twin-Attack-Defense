@@ -11,9 +11,6 @@ import { UserGuideModal } from './components/UserGuideModal';
 import { WindowsExeModal } from './components/WindowsExeModal';
 import { RouterLoginView } from './components/RouterLoginView';
 import { WindowsPythonView } from './components/WindowsPythonView';
-import { PythonWebSentinelView } from './components/PythonWebSentinelView';
-import { PythonAppModal } from './components/PythonAppModal';
-import { PythonAppDashboard } from './components/PythonAppDashboard';
 import { 
   initialHomeProfile, 
   initialDetectedAPs, 
@@ -35,8 +32,8 @@ import {
 import { Language } from './utils/translations';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'python_web' | 'agent' | 'firmware' | 'router_login' | 'dual' | 'windows_py' | 'lab' | 'code' | 'logs'>('python_web');
-  const [lang, setLang] = useState<Language>('ur'); // Default to Urdu/Roman Urdu per user prompt
+  const [currentTab, setCurrentTab] = useState<'router_login' | 'dual' | 'firmware' | 'agent' | 'windows_py' | 'lab' | 'code' | 'logs'>('router_login');
+  const lang: Language = 'en';
 
   const [homeProfile, setHomeProfile] = useState(initialHomeProfile);
   const [dualConfig, setDualConfig] = useState<DualSsidConfig>(initialDualSsidConfig);
@@ -48,7 +45,6 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false);
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
   const [isExeModalOpen, setIsExeModalOpen] = useState(false);
-  const [isPythonModalOpen, setIsPythonModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   const [routerConfig, setRouterConfig] = useState<RouterLoginConfig>({
@@ -57,13 +53,23 @@ export default function App() {
     protocol: 'SSH',
     username: 'root',
     password: '',
-    isConnected: true,
-    routerModel: 'TP-Link Archer AX73 (OpenWrt Sentinel)',
-    firmwareVersion: 'v23.05.3-B4D',
-    uptime: '14 days, 6 hours',
-    cpuLoad: '0.12, 0.08, 0.05',
-    connectedClientsCount: initialClients.length,
-    lastSyncTime: 'Just now'
+    isConnected: false,
+    routerModel: 'Awaiting Router Authentication...',
+    firmwareVersion: '',
+    uptime: '',
+    cpuLoad: '',
+    connectedClientsCount: 0,
+    lastSyncTime: 'Never',
+    routerMac: '',
+    primarySsid: '',
+    primaryBssid: '',
+    channel: 36,
+    frequencyBand: '5 GHz',
+    macHashSha256: '',
+    ttlsIdentity: '',
+    ttlsInnerAuth: 'EAP-MSCHAPv2',
+    ttlsCertificateFingerprint: '',
+    agentCustomizedBuildReady: false
   });
 
   const addLog = (
@@ -89,22 +95,74 @@ export default function App() {
   const handleScan = () => {
     setIsScanning(true);
     setTimeout(() => {
-      setDetectedAPs(prev =>
-        prev.map(ap => ({
+      setDetectedAPs(prev => {
+        if (prev.length === 0) {
+          return [
+            {
+              id: 'ap_genuine',
+              ssid: homeProfile.ssid,
+              bssid: homeProfile.trustedBssid,
+              mac: homeProfile.trustedBssid,
+              channel: homeProfile.expectedChannel,
+              frequency: homeProfile.expectedFrequency,
+              rssi: Math.floor(-48 - Math.random() * 6),
+              gatewayIp: homeProfile.expectedGatewayIp,
+              gatewayMac: homeProfile.expectedGatewayMac,
+              isEvilTwin: false,
+              distanceFromGeofenceMeters: 12,
+              cryptoSignatureStatus: 'valid',
+              routerPublicKeyReported: homeProfile.routerPublicKey,
+              connected: true,
+              isolationActive: false
+            },
+            {
+              id: 'ap_secondary_vault',
+              ssid: homeProfile.dualSsid.secondarySsid,
+              bssid: homeProfile.dualSsid.secondaryBssid,
+              mac: homeProfile.dualSsid.secondaryBssid,
+              channel: homeProfile.dualSsid.secondaryChannel,
+              frequency: homeProfile.dualSsid.secondaryBand,
+              rssi: Math.floor(-52 - Math.random() * 5),
+              gatewayIp: homeProfile.expectedGatewayIp,
+              gatewayMac: homeProfile.expectedGatewayMac,
+              isEvilTwin: false,
+              distanceFromGeofenceMeters: 12,
+              cryptoSignatureStatus: 'valid',
+              routerPublicKeyReported: homeProfile.routerPublicKey,
+              connected: false,
+              isolationActive: false,
+              isFailoverSsid: true
+            },
+            {
+              id: 'ap_neighbor',
+              ssid: 'PTCL_Fiber_Secure',
+              bssid: '74:DA:38:12:44:B0',
+              mac: '74:DA:38:12:44:B0',
+              channel: 1,
+              frequency: '2.4 GHz',
+              rssi: -78,
+              gatewayIp: '192.168.10.1',
+              gatewayMac: '74:DA:38:12:44:B1',
+              isEvilTwin: false,
+              distanceFromGeofenceMeters: 35,
+              cryptoSignatureStatus: 'unverified',
+              connected: false,
+              isolationActive: false
+            }
+          ];
+        }
+
+        return prev.map(ap => ({
           ...ap,
           rssi: ap.isEvilTwin 
             ? Math.floor(-32 - Math.random() * 6)
             : Math.floor(-50 - Math.random() * 8)
-        }))
-      );
+        }));
+      });
+
       setIsScanning(false);
-      addLog(
-        'AGENT_SCAN',
-        'info',
-        'Wi-Fi Spectrum Scan Refreshed',
-        `Scanned ${detectedAPs.length} APs. Checked Primary "${dualConfig.primarySsid}" and Secondary Vault "${dualConfig.secondarySsid}".`
-      );
-    }, 700);
+      addLog('AGENT_SCAN', 'info', 'Ambient Spectrum Scan Completed', 'Discovered active BSSIDs on 2.4/5GHz spectrum.');
+    }, 900);
   };
 
   const handleToggleIsolation = (apId: string) => {
@@ -114,9 +172,9 @@ export default function App() {
           const newState = !ap.isolationActive;
           addLog(
             'ISOLATION_TRIGGERED',
-            newState ? 'critical' : 'info',
-            newState ? 'Network Interface Quarantined' : 'Interface Isolation Removed',
-            `wlan0 interface state changed for AP ${ap.ssid} (${ap.bssid}).`,
+            newState ? 'warning' : 'info',
+            newState ? 'Interface Quarantined' : 'Interface Unlocked',
+            `Access Point ${ap.ssid} (${ap.bssid}) network interface quarantine toggled to ${newState ? 'LOCKED' : 'PERMITTED'}.`,
             { bssid: ap.bssid }
           );
           return { ...ap, isolationActive: newState };
@@ -126,60 +184,92 @@ export default function App() {
     );
   };
 
-  // Swarm failover: Move ALL registered agents simultaneously to Secondary Secure Vault SSID!
+  const handleBlacklistClient = (client: ConnectedClient, reason?: string) => {
+    const defaultReason = reason || 'Manual Administrator Revocation (Rogue probe detected)';
+    
+    // Add to blacklist
+    const newEntry: BlacklistEntry = {
+      id: `bl_${Date.now()}`,
+      mac: client.mac,
+      hostname: client.hostname,
+      ip: client.ip,
+      timestamp: new Date().toLocaleTimeString(),
+      reason: defaultReason,
+      source: 'AUTO_FIRMWARE_SENTINEL',
+      iptablesRule: `iptables -I FORWARD -m mac --mac-source ${client.mac} -j DROP`,
+      hostapdAction: 'DEAUTHENTICATED_AND_BANNED'
+    };
+
+    setBlacklist(prev => [newEntry, ...prev]);
+    // Remove client from active list
+    setClients(prev => prev.filter(c => c.mac !== client.mac));
+
+    addLog(
+      'BLACKLIST_APPLIED',
+      'critical',
+      `Client Blacklisted: ${client.hostname}`,
+      `Layer-2 access blocked for MAC ${client.mac}. Injected DROP rule to hostapd.deny and router firewall forwarding chain.`,
+      { mac: client.mac }
+    );
+  };
+
+  const handleManualBlacklist = (mac: string, hostname: string, reason: string) => {
+    const newEntry: BlacklistEntry = {
+      id: `bl_${Date.now()}`,
+      mac,
+      hostname,
+      timestamp: new Date().toLocaleTimeString(),
+      reason,
+      source: 'MANUAL_ADMIN',
+      iptablesRule: `iptables -I FORWARD -m mac --mac-source ${mac} -j DROP`,
+      hostapdAction: 'DEAUTHENTICATED_AND_BANNED'
+    };
+
+    setBlacklist(prev => [newEntry, ...prev]);
+    setClients(prev => prev.filter(c => c.mac.toUpperCase() !== mac.toUpperCase()));
+
+    addLog(
+      'BLACKLIST_APPLIED',
+      'warning',
+      `Manual MAC Blacklist Added: ${mac}`,
+      `Administrator blacklisted MAC ${mac} (${hostname}) with reason: "${reason}".`,
+      { mac }
+    );
+  };
+
+  const handleUnban = (mac: string) => {
+    setBlacklist(prev => prev.filter(b => b.mac !== mac));
+    addLog(
+      'POLICY_UPDATE',
+      'info',
+      `MAC Removed from Blacklist: ${mac}`,
+      `Layer-2 access restored for ${mac}. Purged from hostapd.deny and firewall quarantine tables.`,
+      { mac }
+    );
+  };
+
+  // Swarm Failover Trigger
   const handleTriggerFleetFailover = () => {
-    // 1. Update Dual SSID status
     setDualConfig(prev => ({
       ...prev,
       primaryStatus: 'COMPROMISED_EVIL_TWIN',
       secondaryStatus: 'ACTIVE_FAILOVER'
     }));
 
-    // 2. Migrate all registered agent devices
     setFleetDevices(prev =>
-      prev.map(dev => ({
-        ...dev,
-        currentConnectedSsid: dualConfig.secondarySsid,
+      prev.map(device => ({
+        ...device,
+        currentConnectedSsid: 'Home_Fiber_SECURE_VAULT',
         failoverStatus: 'SECURED_ON_SECONDARY',
-        lastHandshake: 'Just now (Failover Swarm)'
+        lastHandshake: 'Just now'
       }))
-    );
-
-    // 3. Shift authorized clients on router
-    setClients(prev =>
-      prev.map(c => {
-        if (c.threatStatus === 'SAFE') {
-          return { ...c, activeSsid: dualConfig.secondarySsid };
-        }
-        return c;
-      })
-    );
-
-    // 4. Update detected APs view
-    setDetectedAPs(prev =>
-      prev.map(ap => {
-        if (ap.ssid === dualConfig.secondarySsid) {
-          return { ...ap, connected: true };
-        }
-        if (ap.ssid === dualConfig.primarySsid && !ap.isEvilTwin) {
-          return { ...ap, connected: false };
-        }
-        return ap;
-      })
-    );
-
-    addLog(
-      'DUAL_SSID_FAILOVER',
-      'warning',
-      'Dual-SSID Tripwire Engaged: Primary Compromised',
-      `Evil Twin detected on ${dualConfig.primarySsid}. Router Sentinel activated Secondary Vault ${dualConfig.secondarySsid}.`
     );
 
     addLog(
       'FLEET_MIGRATED',
-      'success',
-      'Multi-Agent Swarm Relocation Complete',
-      `All ${fleetDevices.length} registered agent devices migrated to ${dualConfig.secondarySsid} safely.`
+      'critical',
+      'Emergency Swarm Failover Initiated',
+      'Primary SSID marked COMPROMISED. Secondary Vault SSID fired. All 4 registered fleet agents migrated safely to secure vault.'
     );
   };
 
@@ -191,160 +281,77 @@ export default function App() {
     }));
 
     setFleetDevices(prev =>
-      prev.map(dev => ({
-        ...dev,
-        currentConnectedSsid: dualConfig.primarySsid,
+      prev.map(device => ({
+        ...device,
+        currentConnectedSsid: 'Home_Fiber_5G',
         failoverStatus: 'SYNCED_PRIMARY',
         lastHandshake: 'Just now'
       }))
     );
 
-    setClients(prev =>
-      prev.map(c => {
-        if (c.threatStatus === 'SAFE') {
-          return { ...c, activeSsid: dualConfig.primarySsid };
-        }
-        return c;
-      })
-    );
-
-    setDetectedAPs(prev =>
-      prev.map(ap => {
-        if (ap.ssid === dualConfig.primarySsid && !ap.isEvilTwin) {
-          return { ...ap, connected: true };
-        }
-        if (ap.ssid === dualConfig.secondarySsid) {
-          return { ...ap, connected: false };
-        }
-        return ap;
-      })
-    );
-
     addLog(
       'POLICY_UPDATE',
-      'info',
+      'success',
       'Fleet Restored to Primary SSID',
-      `All agents moved back to ${dualConfig.primarySsid} after threat neutralization.`
+      'Threat cleared. All agent devices migrated back to Primary Home_Fiber_5G operational channel.'
     );
   };
 
-  const handleBlacklistClient = (client: ConnectedClient, reason?: string) => {
-    const finalReason = reason || client.threatReason || 'Unauthorized device deauthenticated by administrator';
-    setClients(prev => prev.filter(c => c.id !== client.id));
-
-    const newEntry: BlacklistEntry = {
-      id: `bl_${Date.now()}`,
-      mac: client.mac,
-      hostname: client.hostname,
-      ip: client.ip,
-      reason: finalReason,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      source: client.threatStatus === 'ROGUE_HACKER' ? 'AUTO_FIRMWARE_SENTINEL' : 'MANUAL_ADMIN',
-      iptablesRule: `iptables -I FORWARD -m mac --mac-source ${client.mac} -j DROP`,
-      hostapdAction: 'DEAUTHENTICATED_AND_BANNED'
-    };
-
-    setBlacklist(prev => [newEntry, ...prev]);
-
-    addLog(
-      'BLACKLIST_APPLIED',
-      'critical',
-      `Client Blacklisted: ${client.mac}`,
-      `Device "${client.hostname}" kicked from AP. Added to hostapd.deny and injected iptables drop rule.`,
-      { mac: client.mac }
-    );
-  };
-
-  const handleManualBlacklist = (mac: string, hostname: string, reason: string) => {
-    setClients(prev => prev.filter(c => c.mac.toUpperCase() !== mac.toUpperCase()));
-
-    const newEntry: BlacklistEntry = {
-      id: `bl_${Date.now()}`,
-      mac,
-      hostname,
-      reason,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      source: 'MANUAL_ADMIN',
-      iptablesRule: `iptables -I FORWARD -m mac --mac-source ${mac} -j DROP`,
-      hostapdAction: 'DEAUTHENTICATED_AND_BANNED'
-    };
-
-    setBlacklist(prev => [newEntry, ...prev]);
-
-    addLog(
-      'BLACKLIST_APPLIED',
-      'critical',
-      `Manual Blacklist: ${mac}`,
-      `MAC address ${mac} banned from router AP radio and iptables firewall.`,
-      { mac }
-    );
-  };
-
-  const handleUnban = (mac: string) => {
-    setBlacklist(prev => prev.filter(item => item.mac !== mac));
-    addLog(
-      'POLICY_UPDATE',
-      'info',
-      `MAC Removed from Blacklist: ${mac}`,
-      `Removed ${mac} from hostapd.deny. Packet forward restriction lifted.`,
-      { mac }
-    );
-  };
-
+  // Attack Injection Handlers for Simulation Lab
   const handleInjectEvilTwin = () => {
-    const evilTwinExists = detectedAPs.some(ap => ap.isEvilTwin);
-    if (!evilTwinExists) {
+    const existing = detectedAPs.find(ap => ap.isEvilTwin);
+    if (!existing) {
       const rogueAp: DetectedAccessPoint = {
-        id: `ap_evil_${Date.now()}`,
-        ssid: dualConfig.primarySsid,
-        bssid: '00:C0:CA:77:21:99',
-        mac: '00:C0:CA:77:21:99',
-        channel: 6,
+        id: `rogue_${Date.now()}`,
+        ssid: homeProfile.ssid,
+        bssid: '00:C0:CA:98:FA:01', // Alfa wireless card OUI
+        mac: '00:C0:CA:98:FA:01',
+        channel: 6, // Channel mismatch
         frequency: '2.4 GHz',
-        rssi: -34,
-        gatewayIp: '10.0.0.1',
-        gatewayMac: '00:C0:CA:77:21:98',
+        rssi: -34, // Elevated signal to trap auto-connect
+        gatewayIp: '192.168.1.1',
+        gatewayMac: '00:C0:CA:98:FA:01',
         isEvilTwin: true,
-        evilTwinReason: 'BSSID Mismatch + Missing Ed25519 signature + Frequency drift',
-        distanceFromGeofenceMeters: 380,
+        evilTwinReason: 'BSSID Mismatch & Channel Drift (Expected Ch 36 5GHz, Found Ch 6 2.4GHz). Ed25519 signature missing.',
         cryptoSignatureStatus: 'missing_signature',
         connected: false,
-        isolationActive: true
+        isolationActive: true,
+        distanceFromGeofenceMeters: 0
       };
       setDetectedAPs(prev => [rogueAp, ...prev]);
     }
   };
 
   const handleInjectHackerClient = () => {
-    const hackerExists = clients.some(c => c.threatStatus === 'ROGUE_HACKER');
-    if (!hackerExists) {
-      const hacker: ConnectedClient = {
-        id: `client_hacker_${Date.now()}`,
-        mac: '00:C0:CA:98:FA:01',
-        ip: '192.168.1.199',
-        hostname: 'kali-rolling-infiltrator',
-        vendor: 'Alfa Network (Attacker Wi-Fi Card / Kali)',
-        connectionTime: 'Just now',
-        rxRateMbps: 54,
-        txRateMbps: 300,
-        rssi: -40,
+    const hackerMac = '00:C0:CA:98:FA:01';
+    const exists = clients.some(c => c.mac === hackerMac);
+    if (!exists) {
+      const newHacker: ConnectedClient = {
+        id: `hacker_${Date.now()}`,
+        hostname: 'Kali-Linux-Attacker',
+        vendor: 'Alfa Network (Realtek RTL8812AU)',
+        ip: '192.168.1.189',
+        mac: hackerMac,
+        connectionTime: '1 min ago',
+        rxRateMbps: 48.2,
+        txRateMbps: 12.4,
+        rssi: -35,
         agentHandshakePassed: false,
-        macRandomized: true,
-        trustScore: 11,
+        macRandomized: false,
+        trustScore: 8,
         threatStatus: 'ROGUE_HACKER',
-        threatReason: 'Active 802.11 Deauth frame storm & unauthorized ARP sniffing detected.',
-        packetAnomalyCount: 89,
-        deauthFrameCount: 312,
-        activeSsid: dualConfig.primarySsid
+        threatReason: 'Deauthentication frame flood detected (142 pkts/sec)',
+        packetAnomalyCount: 142,
+        deauthFrameCount: 142,
+        activeSsid: 'Home_Fiber_5G'
       };
-      setClients(prev => [hacker, ...prev]);
+      setClients(prev => [newHacker, ...prev]);
     }
   };
 
   const handleResetSimulation = () => {
     setDetectedAPs(initialDetectedAPs);
     setClients(initialClients);
-    setBlacklist(initialBlacklist);
     setDualConfig(initialDualSsidConfig);
     setFleetDevices(initialFleetDevices);
     addLog('POLICY_UPDATE', 'info', 'Sandbox Reset', 'Simulated state restored to baseline environment.');
@@ -352,17 +359,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top 3-Zone Navigation Bar */}
+      {/* Top Navigation Bar */}
       <Header
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
-        lang={lang}
-        setLang={setLang}
         onQuickSimulate={() => {
           handleInjectEvilTwin();
           setCurrentTab('dual');
         }}
-        onOpenPythonModal={() => setIsPythonModalOpen(true)}
         onOpenApkModal={() => setIsApkModalOpen(true)}
         onOpenExeModal={() => setIsExeModalOpen(true)}
         onOpenGuideModal={() => setIsGuideModalOpen(true)}
@@ -370,24 +374,30 @@ export default function App() {
 
       {/* Main Viewport Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {currentTab === 'python_web' && (
-          <PythonAppDashboard
+        {currentTab === 'router_login' && (
+          <RouterLoginView
+            routerConfig={routerConfig}
+            onUpdateRouterConfig={(cfg) => setRouterConfig(prev => ({ ...prev, ...cfg }))}
+            clients={clients}
+            onSetClients={(newClients) => setClients(newClients)}
+            blacklist={blacklist}
+            onBlacklistClient={handleBlacklistClient}
             lang={lang}
-            onOpenPythonModal={() => setIsPythonModalOpen(true)}
+            onAddLog={addLog}
+            onOpenApkModal={() => setIsApkModalOpen(true)}
+            onSetFleetDevices={(devices) => setFleetDevices(devices)}
+            homeProfile={homeProfile}
+            onUpdateHomeProfile={(p) => setHomeProfile(prev => ({ ...prev, ...p }))}
           />
         )}
 
-        {currentTab === 'agent' && (
-          <AgentView
-            detectedAPs={detectedAPs}
-            homeProfile={homeProfile}
+        {currentTab === 'dual' && (
+          <DualSsidView
+            dualConfig={dualConfig}
+            fleetDevices={fleetDevices}
             lang={lang}
-            onScan={handleScan}
-            isScanning={isScanning}
-            onToggleIsolation={handleToggleIsolation}
             onTriggerFleetFailover={handleTriggerFleetFailover}
-            onOpenApkModal={() => setIsApkModalOpen(true)}
-            onAddLog={addLog}
+            onRestoreFleetToPrimary={handleRestoreFleetToPrimary}
           />
         )}
 
@@ -403,24 +413,17 @@ export default function App() {
           />
         )}
 
-        {currentTab === 'router_login' && (
-          <RouterLoginView
-            routerConfig={routerConfig}
-            onUpdateRouterConfig={(cfg) => setRouterConfig(prev => ({ ...prev, ...cfg }))}
-            clients={clients}
-            blacklist={blacklist}
+        {currentTab === 'agent' && (
+          <AgentView
+            detectedAPs={detectedAPs}
+            homeProfile={homeProfile}
             lang={lang}
-            onAddLog={addLog}
-          />
-        )}
-
-        {currentTab === 'dual' && (
-          <DualSsidView
-            dualConfig={dualConfig}
-            fleetDevices={fleetDevices}
-            lang={lang}
+            onScan={handleScan}
+            isScanning={isScanning}
+            onToggleIsolation={handleToggleIsolation}
             onTriggerFleetFailover={handleTriggerFleetFailover}
-            onRestoreFleetToPrimary={handleRestoreFleetToPrimary}
+            onOpenApkModal={() => setIsApkModalOpen(true)}
+            onAddLog={addLog}
           />
         )}
 
@@ -459,18 +462,12 @@ export default function App() {
         )}
       </main>
 
-      {/* Android APK Download & Installation Modal */}
+      {/* Android APK Download Modal */}
       <ApkDownloadModal
         isOpen={isApkModalOpen}
         onClose={() => setIsApkModalOpen(false)}
         lang={lang}
-      />
-
-      {/* Standalone Python Web App Modal */}
-      <PythonAppModal
-        isOpen={isPythonModalOpen}
-        onClose={() => setIsPythonModalOpen(false)}
-        lang={lang}
+        routerConfig={routerConfig}
       />
 
       {/* Windows EXE Installer Modal */}
@@ -484,7 +481,6 @@ export default function App() {
       <UserGuideModal
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}
-        lang={lang}
       />
 
       {/* Clean Footer */}

@@ -304,12 +304,10 @@ ctrl_interface_group=0
               <span className="text-xs text-slate-400">OpenWrt + Linux + Android SDK</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {lang === 'ur' ? 'Firmware Sentinel & Agent Code' : 'Firmware Daemon & Endpoint Agent Code'}
+              Firmware Daemon &amp; Endpoint Agent Code
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">
-              {lang === 'ur'
-                ? 'OpenWrt router par chalne wala firmware daemon script aur PC/Android k liye pre-connection agent code yahan se download ya copy karein.'
-                : 'Production-ready scripts for router firmware sentinel daemon, PC/Linux endpoint agent, and Android service module.'}
+              Production-ready scripts for router firmware sentinel daemon, PC/Linux endpoint agent, and Android service module.
             </p>
           </div>
 

@@ -54,20 +54,12 @@ export function FirmwareView({
     const formatted = formatMac(manualMac.trim());
 
     if (!macRegex.test(formatted)) {
-      setFormError(
-        lang === 'ur'
-          ? 'MAC address ka format ghalat hai! Sahi format: 00:C0:CA:98:FA:01'
-          : 'Invalid MAC address format. Example: 00:C0:CA:98:FA:01'
-      );
+      setFormError('Invalid MAC address format. Example: 00:C0:CA:98:FA:01');
       return;
     }
 
     if (blacklist.some(b => b.mac.toUpperCase() === formatted)) {
-      setFormError(
-        lang === 'ur'
-          ? 'Yeh MAC pehle se blacklist mein mojood hai.'
-          : 'This MAC address is already blacklisted.'
-      );
+      setFormError('This MAC address is already blacklisted.');
       return;
     }
 
@@ -94,7 +86,7 @@ export function FirmwareView({
               <span className="text-xs text-slate-400 font-mono">Dual-SSID Ready</span>
               <span className="text-xs text-slate-400">·</span>
               <span className="text-xs text-emerald-400 font-semibold">
-                {lang === 'ur' ? 'Firmware Active & Listening' : 'Mutual Auth Daemon Active'}
+                Mutual Auth Daemon Active
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
@@ -127,7 +119,7 @@ export function FirmwareView({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-4 border-t border-slate-800/80">
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Connected Devices' : 'Active Associated Clients'}
+              Active Associated Clients
             </div>
             <div className="text-lg font-bold text-white mt-0.5 tabular-nums flex items-center gap-2">
               <Users className="w-4 h-4 text-cyan-400" />
@@ -140,7 +132,7 @@ export function FirmwareView({
 
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Hacker & Rogue Probes' : 'Rogue Hacker Detections'}
+              Rogue Hacker Detections
             </div>
             <div className={`text-lg font-bold mt-0.5 tabular-nums flex items-center gap-2 ${
               hackerClients.length > 0 ? 'text-red-400' : 'text-emerald-400'
@@ -155,7 +147,7 @@ export function FirmwareView({
 
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Blacklisted Devices' : 'Blacklist Quarantine'}
+              Blacklist Quarantine
             </div>
             <div className="text-lg font-bold text-amber-400 mt-0.5 tabular-nums flex items-center gap-2">
               <Ban className="w-4 h-4" />
@@ -168,7 +160,7 @@ export function FirmwareView({
 
           <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80">
             <div className="text-[11px] text-slate-400 font-medium">
-              {lang === 'ur' ? 'Ed25519 Router Keypair' : 'AP Hardware Signature'}
+              AP Hardware Signature
             </div>
             <div className="text-xs font-mono font-bold text-cyan-400 mt-1 truncate">
               b4d_ed25519_pk_79c1...
@@ -186,16 +178,14 @@ export function FirmwareView({
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 text-red-300 font-bold text-sm">
               <ShieldAlert className="w-5 h-5 text-red-400" />
-              <span>{lang === 'ur' ? 'HACKER DEVICE DETECT HO GAYI HAI!' : 'ROGUE HACKER DEVICE ATTACHED TO AP!'}</span>
+              <span>ROGUE HACKER DEVICE ATTACHED TO AP!</span>
             </div>
             <span className="text-xs text-red-400 font-mono">
               Action Required: Immediate Blacklist
             </span>
           </div>
           <p className="text-xs text-red-200/80">
-            {lang === 'ur'
-              ? 'Router firmware sentinel ne suspicious device pakad li hai jo deauth frames bhej rahi hai aur jiska agent handshake fail hai. Niche diye gaye button se foran blacklist karein taake router se kick out ho jaye.'
-              : 'The OpenWrt sentinel detected unauthorized packet injection and high-rate 802.11 deauth frames from an unverified client. Immediate MAC ban and packet drop recommended.'}
+            The OpenWrt sentinel detected unauthorized packet injection and high-rate 802.11 deauth frames from an unverified client. Immediate MAC ban and packet drop recommended.
           </p>
         </div>
       )}
@@ -210,7 +200,7 @@ export function FirmwareView({
             </h2>
           </div>
           <span className="text-xs text-slate-400">
-            {lang === 'ur' ? 'Live Router Association Table' : 'Live Router Association Table'}
+            Live Router Association Table
           </span>
         </div>
 
@@ -227,9 +217,18 @@ export function FirmwareView({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-xs">
-              {clients.map((client) => {
-                const isHacker = client.threatStatus === 'ROGUE_HACKER';
-                return (
+              {clients.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <Server className="w-6 h-6 text-slate-600 mx-auto mb-2" />
+                    <p className="font-semibold text-slate-300">No Associated Wireless Clients Found</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Authenticate on the Router Login tab to poll live hostapd association tables and extract real devices.</p>
+                  </td>
+                </tr>
+              ) : (
+                clients.map((client) => {
+                  const isHacker = client.threatStatus === 'ROGUE_HACKER';
+                  return (
                   <tr
                     key={client.id}
                     className={`transition-colors ${
@@ -271,12 +270,12 @@ export function FirmwareView({
                       {client.agentHandshakePassed ? (
                         <span className="inline-flex items-center gap-1 text-emerald-400 font-medium text-xs">
                           <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>{lang === 'ur' ? 'Verified Pass' : 'Cryptographically Verified'}</span>
+                          <span>Cryptographically Verified</span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-red-400 font-medium text-xs">
                           <ShieldAlert className="w-3.5 h-3.5" />
-                          <span>{lang === 'ur' ? 'No Handshake (Rogue)' : 'Unverified / No Agent'}</span>
+                          <span>Unverified / No Agent</span>
                         </span>
                       )}
                     </td>
@@ -336,7 +335,7 @@ export function FirmwareView({
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>
@@ -407,14 +406,14 @@ export function FirmwareView({
           <div className="flex items-center gap-2 pb-3 border-b border-slate-800">
             <Plus className="w-4 h-4 text-cyan-400" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
-              {lang === 'ur' ? 'Device Ko Manually Blacklist Karein' : 'Manual MAC Blacklist Entry'}
+              Manual MAC Blacklist Entry
             </h2>
           </div>
 
           <form onSubmit={handleManualSubmit} className="space-y-3.5 text-xs">
             <div>
               <label className="block text-slate-300 font-medium mb-1">
-                {lang === 'ur' ? 'Hacker / Device Ka MAC Address' : 'Target MAC Address'}
+                Target MAC Address
               </label>
               <input
                 type="text"
@@ -427,7 +426,7 @@ export function FirmwareView({
 
             <div>
               <label className="block text-slate-300 font-medium mb-1">
-                {lang === 'ur' ? 'Device Ka Naam (Optional)' : 'Device Identifier / Hostname'}
+                Device Identifier / Hostname (Optional)
               </label>
               <input
                 type="text"
@@ -440,7 +439,7 @@ export function FirmwareView({
 
             <div>
               <label className="block text-slate-300 font-medium mb-1">
-                {lang === 'ur' ? 'Blacklist Karne Ki Wajah' : 'Threat Reason'}
+                Threat Reason
               </label>
               <select
                 value={manualReason}
@@ -476,7 +475,7 @@ export function FirmwareView({
               className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm text-xs"
             >
               <Ban className="w-4 h-4" />
-              <span>{lang === 'ur' ? 'Foran Blacklist & Block Karein' : 'Apply Layer-2 & Layer-3 Ban'}</span>
+              <span>Apply Layer-2 & Layer-3 Ban</span>
             </button>
           </form>
         </div>

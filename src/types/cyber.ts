@@ -11,6 +11,16 @@ export interface RouterLoginConfig {
   cpuLoad?: string;
   connectedClientsCount?: number;
   lastSyncTime?: string;
+  routerMac?: string;
+  primarySsid?: string;
+  primaryBssid?: string;
+  channel?: number;
+  frequencyBand?: string;
+  macHashSha256?: string;
+  ttlsIdentity?: string;
+  ttlsInnerAuth?: string;
+  ttlsCertificateFingerprint?: string;
+  agentCustomizedBuildReady?: boolean;
 }
 
 export type RouterBrand = 'OPENWRT' | 'MIKROTIK' | 'TPLINK' | 'DDWRT' | 'UBIQUITI' | 'UNIVERSAL_LINUX';
